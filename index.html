@@ -1,0 +1,1445 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; connect-src 'none'; font-src 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>AssetScope — inventario, garantías y fin de soporte</title>
+<style>
+:root{
+  --bg:#0e131c; --bg2:#131a26; --panel:#1a2233; --panel2:#212b40; --panel3:#28344d;
+  --line:#33415c; --line2:#435373;
+  --tx:#eaf0fb; --tx2:#b3c1da; --tx3:#8797b5;
+  --acc:#59a9ff; --accbg:#16375c; --accbd:#3d7ab8;
+  --ok:#2fd07a; --warn:#ffb020; --bad:#ff5c6c; --gold:#ffd166;
+  --okbg:#2fd07a1a; --warnbg:#ffb0201f; --badbg:#ff5c6c1f;
+  --sh:0 18px 50px -22px #000;
+  --f:"Segoe UI",Inter,system-ui,-apple-system,sans-serif;
+  --m:"Cascadia Mono",Consolas,ui-monospace,monospace;
+}
+html[data-theme="light"]{
+  --bg:#eaeef5; --bg2:#e2e8f1; --panel:#ffffff; --panel2:#f1f4fa; --panel3:#e5eaf3;
+  --line:#c3cede; --line2:#a9b8ce;
+  --tx:#111827; --tx2:#4a5772; --tx3:#6b7a94;
+  --acc:#1f6fd0; --accbg:#dceaff; --accbd:#7fb1ec;
+  --ok:#12a355; --warn:#b26a00; --bad:#c62b3c; --gold:#a06a00;
+  --okbg:#12a3551a; --warnbg:#b26a001a; --badbg:#c62b3c1a;
+  --sh:0 10px 30px -16px #7b88a0;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--f);overflow:hidden}
+button,input,select,textarea{font-family:inherit;color:inherit}
+button{cursor:pointer}
+::-webkit-scrollbar{width:12px;height:12px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--line2);border-radius:8px;border:3px solid var(--bg2)}
+::-webkit-scrollbar-thumb:hover{background:var(--acc)}
+
+/* ---------- barra superior ---------- */
+#top{min-height:54px;display:flex;align-items:center;gap:9px;padding:7px 14px;background:var(--panel);border-bottom:2px solid var(--line);position:absolute;top:0;left:0;right:0;z-index:60;flex-wrap:wrap}
+#top .brand{display:flex;align-items:center;gap:9px;font-weight:700;letter-spacing:.2px;flex:0 0 auto}
+#top .brand i{width:10px;height:10px;border-radius:50%;background:var(--acc);box-shadow:0 0 10px var(--acc);display:block}
+#top .brand small{display:block;font-weight:500;font-size:11px;color:var(--tx3);letter-spacing:0}
+.sep{width:1px;height:28px;background:var(--line);flex:0 0 auto}
+.spacer{flex:1}
+.btn{flex:0 0 auto;white-space:nowrap;background:var(--panel2);border:1px solid var(--line2);color:var(--tx);padding:8px 12px;border-radius:8px;font-size:13px;font-weight:550;display:inline-flex;align-items:center;gap:6px;transition:.13s}
+.btn:hover{background:var(--panel3);border-color:var(--acc)}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.acc{background:var(--accbg);border-color:var(--accbd);color:var(--acc)}
+.btn.acc:hover{filter:brightness(1.15)}
+.btn.danger:hover,.btn.danger.armed{background:#4a1a24;border-color:var(--bad);color:#ffd7dc}
+html[data-theme="light"] .btn.danger:hover,html[data-theme="light"] .btn.danger.armed{background:#ffe4e8;color:#8d1524}
+.btn.sm{padding:5px 8px;font-size:11.5px}
+.tabs{display:flex;gap:2px;background:var(--bg2);border:1px solid var(--line2);border-radius:9px;padding:3px;flex:0 0 auto}
+.tabs button{background:none;border:0;color:var(--tx2);padding:6px 12px;border-radius:7px;font-size:12.5px;font-weight:650;display:flex;align-items:center;gap:6px}
+.tabs button:hover{color:var(--tx);background:var(--panel3)}
+.tabs button.on{background:var(--accbg);color:var(--acc)}
+.tabs button .n{font-family:var(--m);font-size:10.5px;background:var(--bad);color:#fff;border-radius:9px;padding:1px 6px;font-weight:700}
+.tabs button .n:empty{display:none}
+.swrap{position:relative;flex:0 1 240px;min-width:120px;display:flex}
+#search{width:100%;background:var(--bg2);border:1px solid var(--line2);border-radius:8px;padding:8px 11px;font-size:13px;outline:none}
+#search::placeholder{color:var(--tx3)}
+#search:focus{border-color:var(--acc);box-shadow:0 0 0 3px #59a9ff33}
+.pill{flex:0 0 auto;font-size:11.5px;color:var(--tx2);background:var(--bg2);border:1px solid var(--line);padding:6px 10px;border-radius:20px;font-family:var(--m)}
+.zoomwrap{display:flex;align-items:center;gap:2px;background:var(--panel2);border:1px solid var(--line2);border-radius:8px;padding:2px;flex:0 0 auto}
+.zoomwrap button{background:none;border:0;color:var(--tx2);padding:5px 9px;border-radius:6px;font-size:14px;line-height:1}
+.zoomwrap button:hover{background:var(--panel3);color:var(--tx)}
+.zoomwrap button:disabled{opacity:.35;background:none}
+.menuwrap{position:relative;flex:0 0 auto}
+.menu{position:fixed;background:var(--panel);border:1px solid var(--line2);border-radius:10px;box-shadow:var(--sh);padding:5px;min-width:260px;display:none;z-index:70}
+.menu.on{display:block}
+.menu button{display:block;width:100%;background:none;border:0;color:var(--tx);padding:9px 10px;border-radius:7px;font-size:12.5px;text-align:left;font-weight:600}
+.menu button:hover{background:var(--panel3)}
+.menu button small{display:block;color:var(--tx3);font-size:10.5px;font-weight:400;margin-top:2px}
+.menu hr{border:0;border-top:1px solid var(--line);margin:4px 2px}
+.glow{box-shadow:0 0 0 3px var(--acc)!important;border-radius:12px}
+
+/* ---------- lienzo ---------- */
+#stage{position:absolute;top:54px;right:0;bottom:0;left:0;overflow:auto;background:radial-gradient(1000px 600px at 20% -10%,var(--bg2),transparent 60%),var(--bg)}
+#view{max-width:1180px;margin:0 auto;padding:22px 24px 110px}
+.vh{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.vh h2{margin:0;font-size:19px;letter-spacing:.2px}
+.vh p{margin:3px 0 0;font-size:12.5px;color:var(--tx3)}
+.vh .grow{flex:1;min-width:220px}
+
+/* semaforo */
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:20px}
+.kpi{background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:14px 16px;text-align:left;box-shadow:var(--sh);display:flex;flex-direction:column;gap:4px;transition:.15s;color:var(--tx)}
+.kpi:hover{border-color:var(--acc)}
+.kpi .big{font-size:34px;font-weight:750;font-family:var(--m);line-height:1}
+.kpi .lb{font-size:12.5px;font-weight:700;display:flex;align-items:center;gap:7px}
+.kpi small{font-size:11px;color:var(--tx3)}
+.kpi.bad{border-color:#ff5c6c88;background:linear-gradient(180deg,var(--badbg),transparent),var(--panel)} .kpi.bad .big{color:var(--bad)}
+.kpi.warn{border-color:#ffb02088;background:linear-gradient(180deg,var(--warnbg),transparent),var(--panel)} .kpi.warn .big{color:var(--warn)}
+.kpi.ok .big{color:var(--ok)}
+.kpi.none .big{color:var(--tx3)}
+.kpi.off{opacity:.45}
+.dot{width:11px;height:11px;border-radius:50%;display:inline-block;flex:0 0 auto}
+.dot.bad{background:var(--bad);box-shadow:0 0 8px var(--bad)}
+.dot.warn{background:var(--warn);box-shadow:0 0 8px var(--warn)}
+.dot.ok{background:var(--ok)}
+.dot.none{background:var(--tx3);opacity:.6}
+.grp{margin-bottom:18px}
+.gh{display:flex;align-items:center;gap:8px;padding:4px 2px 8px;font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--tx3);font-weight:700;background:none;border:0;width:100%;text-align:left}
+.gh span{flex:1}
+.gh:hover{color:var(--tx)}
+.ev{display:grid;grid-template-columns:14px 96px 150px minmax(0,1fr) 128px;align-items:center;gap:12px;width:100%;background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:6px;text-align:left;font-size:12.5px;color:var(--tx)}
+.ev:hover{border-color:var(--acc)}
+.ev.bad{border-left-color:var(--bad)} .ev.warn{border-left-color:var(--warn)} .ev.ok{border-left-color:var(--ok)} .ev.none{border-left-color:var(--line2)}
+.ev .dt{font-family:var(--m);font-size:12px;color:var(--tx2)}
+.ev .kind{font-weight:650;font-size:12px}
+.ev .kind small,.ev .nm small{display:block;font-weight:400;color:var(--tx3);font-size:11px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ev .nm{min-width:0}
+.ev .nm b{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.ev .rel{font-family:var(--m);font-size:11.5px;text-align:right;font-weight:700}
+.ev.bad .rel{color:var(--bad)} .ev.warn .rel{color:var(--warn)} .ev.ok .rel{color:var(--ok)} .ev.none .rel{color:var(--tx3);font-weight:500}
+.empty{background:var(--panel);border:1px dashed var(--line2);border-radius:12px;padding:22px;font-size:13px;color:var(--tx2);line-height:1.6;text-align:center}
+
+/* inventario */
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.filters select{background:var(--panel);border:1px solid var(--line2);border-radius:8px;padding:7px 9px;font-size:12.5px;outline:none;color:var(--tx)}
+.filters select:focus{border-color:var(--acc)}
+.tw{background:var(--panel);border:1px solid var(--line2);border-radius:12px;overflow:auto;box-shadow:var(--sh)}
+table.inv{border-collapse:collapse;width:100%;font-size:12.5px;min-width:980px}
+table.inv th{position:sticky;top:0;background:var(--panel2);text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;color:var(--tx3);font-weight:700;padding:9px 10px;border-bottom:1px solid var(--line2);white-space:nowrap;cursor:pointer;user-select:none}
+table.inv th:hover{color:var(--tx)}
+table.inv th.on{color:var(--acc)}
+table.inv td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap;max-width:220px;overflow:hidden;text-overflow:ellipsis}
+table.inv tr.r{cursor:pointer}
+table.inv tr.r:hover td{background:var(--panel3)}
+table.inv tr.flash td{animation:fl 1.6s ease-out}
+@keyframes fl{0%,40%{background:#ffd16644}}
+table.inv td.mono{font-family:var(--m);font-size:11.5px}
+table.inv td.dim{color:var(--tx3)}
+.stt{font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:5px;border:1px solid;white-space:nowrap}
+.dl{font-family:var(--m);font-size:11.5px;display:inline-flex;align-items:center;gap:5px}
+.dl .dot{width:8px;height:8px;box-shadow:none}
+.foot-n{font-size:11.5px;color:var(--tx3);padding:9px 2px}
+
+/* informe */
+.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:18px}
+.card{background:var(--panel);border:1px solid var(--line2);border-radius:14px;padding:14px 16px;box-shadow:var(--sh)}
+.card .big{font-size:27px;font-weight:750;font-family:var(--m);line-height:1.1}
+.card .lb{font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--tx3);font-weight:700;margin-bottom:6px}
+.card small{display:block;font-size:11.5px;color:var(--tx2);margin-top:5px;line-height:1.4}
+.card.warn .big{color:var(--warn)} .card.bad .big{color:var(--bad)}
+.cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:18px}
+.box{background:var(--panel);border:1px solid var(--line2);border-radius:14px;padding:13px 15px;box-shadow:var(--sh)}
+.box h3{margin:0 0 10px;font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--tx3)}
+.brow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;font-size:12px;margin-bottom:8px}
+.brow b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brow span{font-family:var(--m);font-size:11.5px;color:var(--tx2);text-align:right}
+.brow .bar{grid-column:1/3;height:6px;border-radius:3px;background:var(--bg2);overflow:hidden}
+.brow .bar i{display:block;height:100%;background:var(--acc);border-radius:3px}
+table.rep{border-collapse:collapse;width:100%;font-size:12.5px}
+table.rep th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;color:var(--tx3);padding:8px 10px;border-bottom:1px solid var(--line2);background:var(--panel2)}
+table.rep td{padding:7px 10px;border-bottom:1px solid var(--line)}
+table.rep td.num,table.rep th.num{text-align:right;font-family:var(--m)}
+table.rep tr.tot td{font-weight:750;border-bottom:0}
+table.rep tr.r{cursor:pointer} table.rep tr.r:hover td{background:var(--panel3)}
+
+/* ---------- modal ---------- */
+#veil{position:fixed;inset:0;background:#05080ecc;backdrop-filter:blur(3px);display:none;z-index:300;align-items:center;justify-content:center}
+#veil.on{display:flex}
+.modal{width:480px;max-width:94vw;background:var(--panel);border:2px solid var(--line2);border-radius:14px;box-shadow:var(--sh);overflow:hidden}
+.modal.wide{width:820px}
+.modal h3{margin:0;padding:14px 16px;font-size:14px;background:var(--panel2);border-bottom:1px solid var(--line2);letter-spacing:.4px;display:flex;align-items:center;gap:8px}
+.modal h3 .inv{font-family:var(--m);color:var(--gold);font-size:12.5px}
+.modal .body{padding:15px 16px;display:flex;flex-direction:column;gap:12px;max-height:72vh;overflow:auto}
+.modal .foot{padding:12px 16px;border-top:1px solid var(--line2);display:flex;gap:8px;justify-content:flex-end;background:var(--panel2);flex-wrap:wrap}
+.fs{border:1px solid var(--line);border-radius:10px;padding:11px 12px 12px;margin:0}
+.fs legend{font-size:10.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--acc);font-weight:700;padding:0 5px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.g4{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px}
+.fld label{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--tx3);margin-bottom:5px;font-weight:700}
+.fld input,.fld select,.fld textarea{width:100%;background:var(--bg2);border:1.5px solid var(--line2);border-radius:8px;padding:8px 10px;font-size:13px;outline:none}
+.fld input:focus,.fld select:focus,.fld textarea:focus{border-color:var(--acc);box-shadow:0 0 0 3px #59a9ff33}
+.fld textarea{resize:vertical;min-height:54px;line-height:1.45}
+.fld input.mono{font-family:var(--m)}
+.fld .st{font-size:11px;margin-top:4px;font-family:var(--m);min-height:14px}
+.fld .st.bad{color:var(--bad)} .fld .st.warn{color:var(--warn)} .fld .st.ok{color:var(--ok)}
+html[data-theme="dark"] input[type=date]{color-scheme:dark}
+.hint{font-size:11.5px;color:var(--tx3);line-height:1.5}
+.hint b{color:var(--tx2)}
+.warnline{font-size:11.5px;color:var(--warn);font-weight:600}
+.hl{display:flex;flex-direction:column;gap:5px}
+.hl .it{display:flex;gap:8px;align-items:flex-start;font-size:12px;background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:6px 8px}
+.hl .it .d{font-family:var(--m);font-size:11px;color:var(--tx3);flex:0 0 auto;padding-top:1px}
+.hl .it .t{flex:1;line-height:1.4;word-break:break-word}
+.hl .it a{color:var(--acc);word-break:break-all}
+.hl .it button{background:none;border:0;color:var(--tx3);padding:0 2px;font-size:12px}
+.hl .it button:hover{color:var(--bad)}
+.hl .it button.cp:hover{color:var(--acc)}
+.addrow{display:flex;gap:6px;margin-top:6px}
+.addrow input{background:var(--bg2);border:1.5px solid var(--line2);border-radius:8px;padding:7px 9px;font-size:12.5px;outline:none;min-width:0}
+.addrow input:focus{border-color:var(--acc)}
+.chk{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;color:var(--tx2);line-height:1.45}
+.chk input{margin-top:3px}
+.prev{max-height:220px;overflow:auto;border:1px solid var(--line);border-radius:8px}
+.prev table{border-collapse:collapse;width:100%;font-size:11.5px}
+.prev td,.prev th{padding:4px 7px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+.prev th{background:var(--panel2);color:var(--tx3);font-size:10px;text-transform:uppercase}
+.tag{font-size:10.5px;font-weight:700;padding:1px 6px;border-radius:4px;border:1px solid var(--line2);color:var(--tx2)}
+.tag.new{color:var(--ok);border-color:#2fd07a66} .tag.upd{color:var(--acc);border-color:var(--accbd)} .tag.skip{color:var(--tx3)}
+.qrprev{display:flex;gap:14px;align-items:center;background:#fff;color:#000;border-radius:10px;padding:10px 12px;border:1px solid var(--line2)}
+.qrprev svg{width:96px;height:96px;flex:0 0 auto}
+.qrprev .lt b{display:block;font-family:var(--m);font-size:15px}
+.qrprev .lt span{display:block;font-size:11.5px;color:#333}
+
+#savest.ok{color:var(--ok);border-color:#2fd07a55}
+#savest.bad{color:var(--bad);border-color:#ff5c6c66;font-weight:700}
+#warn{display:none;position:absolute;left:0;right:0;z-index:58;background:var(--bad);color:#fff;font-size:12.5px;font-weight:600;padding:8px 14px;align-items:center;gap:10px}
+#warn.on{display:flex}
+#warn button{background:#00000033;border:1px solid #ffffff55;color:#fff;padding:4px 9px;border-radius:6px;font-size:11.5px;font-weight:700}
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--panel);border:1.5px solid var(--acc);padding:10px 16px;border-radius:10px;font-size:13px;z-index:400;opacity:0;pointer-events:none;transition:.2s;box-shadow:var(--sh);font-weight:600}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(-4px)}
+#toast .act{margin-left:10px;background:var(--acc);border:0;color:#fff;padding:3px 9px;border-radius:6px;font-size:11.5px;font-weight:700;pointer-events:auto}
+#cap{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:420;display:none;
+  align-items:center;gap:14px;max-width:min(1000px,92vw);padding:14px 22px;border-radius:14px;
+  background:linear-gradient(180deg,#0e131cf2,#0b0f17f2);border:2px solid var(--acc);
+  box-shadow:0 24px 70px -18px #000,0 0 0 1px #0006;font-size:18px;font-weight:650;color:#fff;line-height:1.35}
+#cap.on{display:flex}
+#cap b{color:#59a9ff}
+#cap button{background:#ffffff1a;border:1px solid #ffffff44;color:#fff;padding:6px 11px;border-radius:8px;font-size:12px;font-weight:700;flex:0 0 auto}
+#tour.on{background:var(--acc);border-color:var(--acc);color:#fff}
+#ver{background:none;border:0;padding:0;margin-left:5px;font:inherit;color:var(--acc);cursor:pointer}
+#ver:hover{text-decoration:underline}
+.nv h4{margin:14px 0 4px;font-size:13px}
+.nv h4:first-child{margin-top:0}
+.nv h4 span{font-weight:400;color:var(--tx3);font-size:11.5px;margin-left:6px}
+.nv ul{margin:0;padding-left:18px;font-size:12.5px;line-height:1.6;color:var(--tx2)}
+
+@media (max-width:900px){
+  .kpis,.cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cols{grid-template-columns:1fr}
+  .ev{grid-template-columns:14px 1fr auto;row-gap:4px}
+  .ev .dt{grid-column:2} .ev .kind{grid-column:2/4} .ev .nm{grid-column:2/4} .ev .rel{grid-row:1;grid-column:3}
+  .g3,.g4{grid-template-columns:1fr 1fr}
+  #view{padding:16px 16px 110px}
+}
+
+/* ---------- impresion / PDF y etiquetas ---------- */
+#print{display:none}
+@media print{
+  @page{size:A4 portrait;margin:12mm}
+  body{overflow:visible;background:#fff;color:#000}
+  #top,#stage,#veil,#toast,#warn,#cap,.menu{display:none!important}
+  #print{display:block;font-family:var(--f);color:#000}
+  #print h1{font-size:18px;margin:0 0 2px}
+  #print .meta{font-size:11px;color:#555;margin-bottom:14px}
+  #print h2{font-size:13px;margin:18px 0 6px;border-bottom:2px solid #000;padding-bottom:3px;page-break-after:avoid}
+  #print .pb{page-break-before:always}
+  #print table{width:100%;border-collapse:collapse;font-size:9.5px;margin-bottom:8px}
+  #print th{background:#eee;text-align:left;border:1px solid #999;padding:4px 5px}
+  #print td{border:1px solid #bbb;padding:3px 5px;vertical-align:top}
+  #print td.num,#print th.num{text-align:right}
+  #print tr{page-break-inside:avoid}
+  #print .kp{display:flex;gap:8px;margin:6px 0 4px}
+  #print .kp div{flex:1;border:1.5px solid #000;border-radius:6px;padding:7px 9px;font-size:10px}
+  #print .kp b{display:block;font-size:17px}
+  #print .s-bad{color:#b00020;font-weight:700} #print .s-warn{color:#8a5a00;font-weight:700}
+  #print .cols2{display:flex;gap:12px} #print .cols2>div{flex:1}
+  body.labels #print{display:block}
+  @page labels{size:A4 portrait;margin:0}
+  .sheet{page:labels;display:grid;grid-template-columns:repeat(3,70mm);grid-auto-rows:37mm;width:210mm}
+  .lab{height:37mm;padding:3mm;display:flex;gap:3mm;align-items:center;border:.2mm dashed #bbb;overflow:hidden;page-break-inside:avoid}
+  .lab svg{width:29mm;height:29mm;flex:0 0 auto}
+  .lab .lt{min-width:0;font-size:8.5pt;line-height:1.25}
+  .lab .lt b{display:block;font-family:var(--m);font-size:11.5pt;margin-bottom:1mm}
+  .lab .lt span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .lab .lt .own{font-size:7pt;color:#444;margin-top:1mm}
+}
+</style>
+</head>
+<body>
+<div id="top">
+  <div class="brand"><i></i><div>AssetScope<small>inventario y caducidades ·<button id="ver" title="Ver novedades"></button></small></div></div>
+  <div class="sep"></div>
+  <div class="tabs" id="tabs">
+    <button data-tab="cad">🚦 Caducidades <span class="n" id="nBad"></span></button>
+    <button data-tab="inv">📋 Inventario</button>
+    <button data-tab="rep">📊 Informe</button>
+  </div>
+  <div class="swrap"><input id="search" placeholder="Buscar equipo, serie, persona…" autocomplete="off"></div>
+  <span class="pill" id="stats">—</span>
+  <div class="spacer"></div>
+  <div class="zoomwrap"><button id="undo" title="Deshacer (Ctrl+Z)" disabled>↶</button><button id="redo" title="Rehacer (Ctrl+Y)" disabled>↷</button></div>
+  <button class="btn" id="theme" title="Cambiar tema">🌙</button>
+  <button class="btn" id="cfgBtn" title="Ajustes: días de aviso, antigüedad, empresa y etiquetas">⚙</button>
+  <div class="sep"></div>
+  <button class="btn" id="tour" title="Demostración automática">▶ Ver demo</button>
+  <button class="btn acc" id="addBtn">＋ Equipo</button>
+  <div class="menuwrap">
+    <button class="btn acc" id="expBtn">⭳ Exportar ▾</button>
+    <div class="menu" id="expMenu">
+      <button data-exp="pdf">📄 Informe de parque (PDF)<small>Resumen, caducidades e inventario completo</small></button>
+      <button data-exp="csv">📊 Excel (CSV)<small>Todo el inventario, una fila por equipo</small></button>
+      <button data-exp="qr">🏷 Etiquetas con QR<small>Hoja A4 de 3 × 8 para imprimir</small></button>
+      <hr>
+      <button data-exp="json">💾 Copia de seguridad (JSON)<small>Para volver a importarlo aquí</small></button>
+    </div>
+  </div>
+  <button class="btn" id="linkFile" title="Guardar automáticamente en un archivo tuyo">💾 Archivo</button>
+  <span class="pill" id="savest">—</span>
+  <div class="menuwrap">
+    <button class="btn" id="impBtn">Importar ▾</button>
+    <div class="menu" id="impMenu">
+      <button data-imp="csv">📊 Desde Excel (CSV)<small>Tu hoja de inventario de siempre: se reconocen las columnas solas</small></button>
+      <button data-imp="rack">🗄 Desde RackScope<small>Los equipos de tus racks, con su sala, rack y U</small></button>
+      <button data-imp="json">💾 Copia de seguridad (JSON)<small>Sustituye el inventario por el de la copia</small></button>
+    </div>
+  </div>
+  <button class="btn danger" id="reset">Reiniciar</button>
+  <input type="file" id="file" hidden>
+</div>
+
+<div id="stage"><div id="view"></div></div>
+
+<div id="veil"><div class="modal" id="modal"></div></div>
+<div id="warn"></div>
+<div id="cap"><span id="capT"></span><button id="capX">✕ salir</button></div>
+<div id="toast"></div>
+<div id="print"></div>
+
+<script>
+"use strict";
+const KEY="assetscope.v1";
+const TYPES={servidor:"Servidor",switch:"Switch",router:"Router",firewall:"Cortafuegos",cabina:"Cabina / NAS",sai:"SAI",ap:"Punto de acceso",
+  pc:"PC",portatil:"Portátil",monitor:"Monitor",impresora:"Impresora",telefono:"Teléfono",movil:"Móvil / tablet",otro:"Otro"};
+const ESTADOS={produccion:{n:"En producción",c:"#2fd07a"},almacen:{n:"En almacén",c:"#94a3b8"},prestado:{n:"Prestado",c:"#59a9ff"},
+  rma:{n:"En RMA",c:"#ffb020"},baja:{n:"De baja",c:"#ff5c6c"}};
+const TYPES_PL={servidor:"servidores",switch:"switches",router:"routers",firewall:"cortafuegos",cabina:"cabinas / NAS",sai:"SAI",ap:"puntos de acceso",
+  pc:"PC",portatil:"portátiles",monitor:"monitores",impresora:"impresoras",telefono:"teléfonos",movil:"móviles / tablets",otro:"otros"};
+const tipoN=(t,n)=>n===1?TYPES[t].toLowerCase().replace(/^sai$|^pc$/,x=>x.toUpperCase()):TYPES_PL[t];
+const CICLO={garantia:"Garantía",soporte:"Soporte del fabricante",mantenimiento:"Contrato de mantenimiento"};
+const CICLO_C={garantia:"Fin de garantía",soporte:"Fin de soporte",mantenimiento:"Fin de mantenimiento"};
+const LVL={bad:"Vencido",warn:"Vence pronto",ok:"Al día",none:"Sin fechas"};
+
+let uid=0; const nid=p=>p+(++uid)+"_"+Math.random().toString(36).slice(2,6);
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const str=x=>x==null?"":String(x);
+const has=(o,k)=>typeof k==="string"&&Object.prototype.hasOwnProperty.call(o,k);
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+const fmt=n=>Number(n||0).toLocaleString("es-ES",{maximumFractionDigits:2});
+const eur=n=>Number(n||0).toLocaleString("es-ES",{style:"currency",currency:"EUR",maximumFractionDigits:0});
+
+/* ---------- fechas ---------- */
+const pad=n=>String(n).padStart(2,"0");
+const isoOf=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+function today0(){const d=new Date();d.setHours(0,0,0,0);return d;}
+const todayIso=()=>isoOf(today0());
+const rd=n=>{const d=today0();d.setDate(d.getDate()+n);return isoOf(d);};        // fecha relativa a hoy (datos de ejemplo)
+function isoOk(s){
+  s=str(s).trim();const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s);if(!m)return "";
+  const d=new Date(+m[1],+m[2]-1,+m[3]);return d.getMonth()===+m[2]-1&&d.getDate()===+m[3]?s:"";
+}
+// fechas de una hoja de calculo: 2027-04-12, 12/04/2027, 12-4-27, 12.04.2027 o el numero de serie de Excel
+function parseFecha(v){
+  v=str(v).trim();if(!v)return "";
+  let m=/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/.exec(v);
+  if(m)return isoOk(m[1]+"-"+pad(m[2])+"-"+pad(m[3]));
+  m=/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{2,4})$/.exec(v);
+  if(m){let y=+m[3];if(y<100)y+=y<70?2000:1900;return isoOk(y+"-"+pad(m[2])+"-"+pad(m[1]));}
+  if(/^\d{5}$/.test(v)){const d=new Date(Date.UTC(1899,11,30)+(+v)*864e5);return isoOf(new Date(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()));}
+  return "";
+}
+const fdate=iso=>iso?iso.slice(8,10)+"/"+iso.slice(5,7)+"/"+iso.slice(0,4):"";
+function days(iso){const m=iso.split("-");return Math.round((new Date(+m[0],+m[1]-1,+m[2])-today0())/864e5);}
+function span(n){
+  if(n<45)return n+(n===1?" día":" días");
+  if(n<730){const m=Math.round(n/30.44);return m+(m===1?" mes":" meses");}
+  const y=Math.round(n/365.25*10)/10;return String(y).replace(".",",")+" años";
+}
+const rel=d=>d===0?"hoy":d<0?"hace "+span(-d):"en "+span(d);
+function precio(v){
+  if(typeof v==="number")return isFinite(v)&&v>=0?Math.round(v*100)/100:0;
+  let t=str(v).replace(/[€$\s]|EUR/gi,"");if(!t)return 0;
+  if(/,\d{1,2}$/.test(t))t=t.replace(/\./g,"").replace(",",".");else t=t.replace(/,/g,"");
+  const n=parseFloat(t);return isFinite(n)&&n>=0?Math.round(n*100)/100:0;
+}
+
+/* ---------- datos ---------- */
+function blankAsset(){
+  return {id:nid("a"),inv:"",nombre:"",tipo:"servidor",marca:"",modelo:"",serie:"",estado:"produccion",
+    ubicacion:{sala:"",rack:"",u:""},asignado:"",
+    compra:{proveedor:"",fecha:"",factura:"",precio:0,centroCoste:""},
+    ciclo:{garantia:"",soporte:"",mantenimiento:"",renovacion:0},
+    historial:[],adjuntos:[],notas:""};
+}
+function seed(){
+  const A=(o)=>Object.assign(blankAsset(),o);
+  const L=[
+    A({nombre:"srv-app-01",tipo:"servidor",marca:"Dell",modelo:"PowerEdge R7415",serie:"ABC1234",ubicacion:{sala:"CPD",rack:"RACK A",u:"12"},asignado:"Sistemas",
+      compra:{proveedor:"Dell Technologies",fecha:rd(-1290),factura:"F-2023-0412",precio:4200,centroCoste:"IT-INFRA"},
+      ciclo:{garantia:rd(-195),soporte:rd(720),mantenimiento:rd(45),renovacion:5200},
+      historial:[{fecha:rd(-340),texto:"Sustituida la fuente de alimentación 2"},{fecha:rd(-60),texto:"Ampliada la RAM a 256 GB"}],
+      adjuntos:[{nombre:"Factura",ruta:"\\\\nas-01\\it\\facturas\\F-2023-0412.pdf"}],notas:"Aplicaciones internas y ERP"}),
+    A({nombre:"srv-bd-01",tipo:"servidor",marca:"Dell",modelo:"PowerEdge R740",serie:"7XK2Q93",ubicacion:{sala:"CPD",rack:"RACK A",u:"14"},asignado:"Sistemas",
+      compra:{proveedor:"Dell Technologies",fecha:rd(-1650),factura:"F-2022-0198",precio:6900,centroCoste:"IT-INFRA"},
+      ciclo:{garantia:rd(-555),soporte:rd(60),mantenimiento:rd(-20),renovacion:8000},notas:"SQL Server de producción"}),
+    A({nombre:"sw-core-01",tipo:"switch",marca:"Cisco",modelo:"Catalyst C9300-48P",serie:"FOC2421X0AB",ubicacion:{sala:"CPD",rack:"RACK A",u:"2"},asignado:"Sistemas",
+      compra:{proveedor:"Ingram Micro",fecha:rd(-900),factura:"F-2024-0077",precio:5600,centroCoste:"IT-RED"},
+      ciclo:{garantia:rd(195),soporte:rd(1460),mantenimiento:"",renovacion:0}}),
+    A({nombre:"fw-01",tipo:"firewall",marca:"Fortinet",modelo:"FortiGate 100F",serie:"FG100FTK20001234",ubicacion:{sala:"CPD",rack:"RACK A",u:"1"},asignado:"Sistemas",
+      compra:{proveedor:"Exclusive Networks",fecha:rd(-700),factura:"F-2024-0233",precio:3100,centroCoste:"IT-RED"},
+      ciclo:{garantia:rd(30),soporte:rd(1800),mantenimiento:rd(30),renovacion:1450},notas:"Licencia FortiCare + UTP: renovación anual"}),
+    A({nombre:"nas-01",tipo:"cabina",marca:"Synology",modelo:"RackStation RS1221+",serie:"21A0PDN123456",ubicacion:{sala:"CPD",rack:"RACK B",u:"8"},asignado:"Sistemas",
+      compra:{proveedor:"PcComponentes",fecha:rd(-2000),factura:"F-2021-0051",precio:2300,centroCoste:"IT-INFRA"},
+      ciclo:{garantia:rd(-900),soporte:rd(-200),mantenimiento:"",renovacion:3200},
+      historial:[{fecha:rd(-120),texto:"Disco 3 sustituido (aviso SMART)"}],notas:"Copias de seguridad y carpetas compartidas"}),
+    A({nombre:"sai-cpd",tipo:"sai",marca:"APC",modelo:"Smart-UPS SRT 3000",serie:"AS2109123456",ubicacion:{sala:"CPD",rack:"RACK B",u:"1"},asignado:"Sistemas",
+      compra:{proveedor:"Schneider Electric",fecha:rd(-1500),factura:"F-2022-0301",precio:2650,centroCoste:"IT-INFRA"},
+      ciclo:{garantia:rd(-400),soporte:"",mantenimiento:rd(12),renovacion:600},notas:"Mantenimiento anual con cambio de baterías"}),
+    A({nombre:"ap-planta1",tipo:"ap",marca:"Ubiquiti",modelo:"U6-Pro",serie:"F4E2C6AB12CD",ubicacion:{sala:"Planta 1 · pasillo",rack:"",u:""},
+      compra:{proveedor:"Ubiquiti Store",fecha:rd(-400),factura:"F-2025-0012",precio:189,centroCoste:"IT-RED"},
+      ciclo:{garantia:rd(330),soporte:"",mantenimiento:"",renovacion:0}}),
+    A({nombre:"imp-recepcion",tipo:"impresora",marca:"HP",modelo:"LaserJet Enterprise M507",serie:"PHBXK12345",ubicacion:{sala:"Recepción",rack:"",u:""},asignado:"Recepción",
+      compra:{proveedor:"Renting OfiPrint",fecha:rd(-2300),factura:"",precio:0,centroCoste:"ADM"},
+      ciclo:{garantia:rd(-1570),soporte:"",mantenimiento:rd(150),renovacion:0},notas:"En renting: el mantenimiento incluye el tóner"}),
+    A({nombre:"pt-ana",tipo:"portatil",marca:"Lenovo",modelo:"ThinkPad T14 Gen 3",serie:"PF3XY7Z1",ubicacion:{sala:"Oficina · planta 1",rack:"",u:""},asignado:"Ana López (Contabilidad)",
+      compra:{proveedor:"Lenovo Store",fecha:rd(-820),factura:"F-2024-0145",precio:1350,centroCoste:"CONTAB"},
+      ciclo:{garantia:rd(275),soporte:"",mantenimiento:"",renovacion:0}}),
+    A({nombre:"pt-javier",tipo:"portatil",marca:"Dell",modelo:"Latitude 5440",serie:"5ZQ8K93",estado:"rma",ubicacion:{sala:"Servicio técnico Dell",rack:"",u:""},asignado:"Javier Ruiz (Comercial)",
+      compra:{proveedor:"Dell Technologies",fecha:rd(-300),factura:"F-2025-0088",precio:1190,centroCoste:"COMERCIAL"},
+      ciclo:{garantia:rd(795),soporte:"",mantenimiento:"",renovacion:0},
+      historial:[{fecha:rd(-9),texto:"Pantalla con líneas: abierto caso con Dell, recogida a domicilio"}]}),
+    A({nombre:"pt-reserva-01",tipo:"portatil",marca:"Lenovo",modelo:"ThinkPad E14 Gen 5",serie:"PF4AB2C3",estado:"almacen",ubicacion:{sala:"Almacén IT",rack:"",u:""},
+      compra:{proveedor:"Lenovo Store",fecha:rd(-60),factura:"F-2026-0201",precio:880,centroCoste:"IT-PUESTO"},
+      ciclo:{garantia:rd(1035),soporte:"",mantenimiento:"",renovacion:0},notas:"Preparado para la próxima incorporación"}),
+    A({nombre:"pc-taller",tipo:"pc",marca:"HP",modelo:"ProDesk 400 G6",serie:"CZC0123ABC",ubicacion:{sala:"Taller",rack:"",u:""},asignado:"Producción",
+      compra:{proveedor:"Infortisa",fecha:rd(-2100),factura:"F-2020-0410",precio:720,centroCoste:"PROD"},
+      ciclo:{garantia:rd(-1000),soporte:rd(-30),mantenimiento:"",renovacion:800},notas:"Sigue con Windows 10: sin parches desde el fin de soporte"}),
+    A({nombre:"sw-planta1",tipo:"switch",marca:"HPE Aruba",modelo:"2530-24G-PoE+",serie:"CN12FP3456",ubicacion:{sala:"Planta 1 · armario",rack:"RACK P1",u:"3"},asignado:"Sistemas",
+      compra:{proveedor:"Ingram Micro",fecha:rd(-2500),factura:"F-2019-0099",precio:980,centroCoste:"IT-RED"},
+      ciclo:{garantia:"",soporte:rd(400),mantenimiento:"",renovacion:1500},notas:"Garantía de por vida limitada"}),
+    A({nombre:"proyector-sala",tipo:"otro",marca:"Epson",modelo:"EB-W51",serie:"X8Y9001234",estado:"prestado",ubicacion:{sala:"Sala de reuniones",rack:"",u:""},asignado:"Comercial · feria de Valencia",
+      compra:{proveedor:"Amazon",fecha:rd(-500),factura:"",precio:520,centroCoste:"COMERCIAL"},ciclo:{garantia:rd(230),soporte:"",mantenimiento:"",renovacion:0},
+      historial:[{fecha:rd(-3),texto:"Prestado a Comercial hasta el lunes"}]}),
+    A({nombre:"srv-old-02",tipo:"servidor",marca:"HP",modelo:"ProLiant DL380 Gen9",serie:"CZJ5480ABC",estado:"baja",ubicacion:{sala:"Almacén IT",rack:"",u:""},
+      compra:{proveedor:"HP",fecha:rd(-3300),factura:"F-2017-0021",precio:5400,centroCoste:"IT-INFRA"},ciclo:{garantia:rd(-2200),soporte:rd(-800),mantenimiento:"",renovacion:0},
+      historial:[{fecha:rd(-90),texto:"Dado de baja: discos borrados y pendiente de reciclaje"}]})
+  ];
+  L.forEach((a,i)=>a.inv="INV-"+String(i+1).padStart(4,"0"));
+  return L;
+}
+function freshDB(withSeed){
+  const a=withSeed===false?[]:seed();
+  return {v:1,app:"assetscope",theme:"dark",tab:"cad",cfg:{aviso:90,viejo:5,empresa:"",qr:"texto",qrBase:""},activos:a};
+}
+// todo lo que llega de un JSON (importado o vinculado) se valida: ids, fechas, numeros y textos
+const safeId=(x,p)=>typeof x==="string"&&/^[\w-]{1,64}$/.test(x)?x:nid(p);
+const t80=(x,n)=>str(x).slice(0,n||200);
+function cleanAsset(x){
+  const a=blankAsset();if(!x||typeof x!=="object")return null;
+  a.id=safeId(x.id,"a");a.inv=t80(x.inv,40).trim();a.nombre=t80(x.nombre,120).trim()||"SIN NOMBRE";
+  a.tipo=has(TYPES,x.tipo)?x.tipo:"otro";a.marca=t80(x.marca,80);a.modelo=t80(x.modelo,120);a.serie=t80(x.serie,80).trim();
+  a.estado=has(ESTADOS,x.estado)?x.estado:"produccion";
+  const u=x.ubicacion&&typeof x.ubicacion==="object"?x.ubicacion:{};
+  a.ubicacion={sala:t80(u.sala,120),rack:t80(u.rack,60),u:t80(u.u,10)};
+  a.asignado=t80(x.asignado,120);
+  const c=x.compra&&typeof x.compra==="object"?x.compra:{};
+  a.compra={proveedor:t80(c.proveedor,120),fecha:isoOk(c.fecha),factura:t80(c.factura,60),precio:precio(c.precio),centroCoste:t80(c.centroCoste,60)};
+  const y=x.ciclo&&typeof x.ciclo==="object"?x.ciclo:{};
+  a.ciclo={garantia:isoOk(y.garantia),soporte:isoOk(y.soporte),mantenimiento:isoOk(y.mantenimiento),renovacion:precio(y.renovacion)};
+  a.historial=(Array.isArray(x.historial)?x.historial:[]).filter(h=>h&&typeof h==="object"&&str(h.texto).trim())
+    .map(h=>({fecha:isoOk(h.fecha)||"",texto:t80(h.texto,1000)})).slice(0,500);
+  a.adjuntos=(Array.isArray(x.adjuntos)?x.adjuntos:[]).filter(h=>h&&typeof h==="object"&&str(h.ruta).trim())
+    .map(h=>({nombre:t80(h.nombre,120),ruta:t80(h.ruta,1000)})).slice(0,100);
+  a.notas=t80(x.notas,4000);
+  return a;
+}
+function parseDB(d){
+  if(!d||typeof d!=="object"||!Array.isArray(d.activos))return null;
+  const c=d.cfg&&typeof d.cfg==="object"?d.cfg:{};
+  const db={v:1,app:"assetscope",theme:d.theme==="light"?"light":"dark",tab:["cad","inv","rep"].includes(d.tab)?d.tab:"cad",
+    cfg:{aviso:Math.max(1,Math.min(730,Math.round(+c.aviso)||90)),viejo:Math.max(1,Math.min(30,Math.round(+c.viejo)||5)),
+      empresa:t80(c.empresa,80),qr:c.qr==="enlace"?"enlace":"texto",qrBase:/^https?:\/\//i.test(str(c.qrBase))?t80(c.qrBase,300):""},
+    activos:d.activos.map(cleanAsset).filter(Boolean)};
+  const ids=new Set(),invs=new Set();
+  db.activos.forEach(a=>{if(ids.has(a.id))a.id=nid("a");ids.add(a.id);
+    if(a.inv&&invs.has(a.inv.toUpperCase()))a.inv="";if(a.inv)invs.add(a.inv.toUpperCase());});
+  db.activos.forEach(a=>{if(!a.inv){a.inv=nextInv(db);}});
+  return db;
+}
+function nextInv(db){
+  let mx=0;(db||DB).activos.forEach(a=>{const m=/(\d+)\s*$/.exec(a.inv);if(m)mx=Math.max(mx,+m[1]);});
+  return "INV-"+String(mx+1).padStart(4,"0");
+}
+function load(){
+  try{const raw=localStorage.getItem(KEY);if(raw){const d=parseDB(JSON.parse(raw));if(d)return d;}}catch(e){}
+  return freshDB();
+}
+let DB;
+const byId=id=>DB.activos.find(a=>a.id===id);
+
+/* ---------- guardado: navegador + archivo vinculado ---------- */
+let lsOK=true,fileHandle=null,fileName="",wTimer=null;
+let UNDO=[],REDO=[],hData=null,hMute=false;
+const dataKey=()=>JSON.stringify({a:DB.activos,c:DB.cfg});
+function save(){
+  const full=JSON.stringify(DB);
+  try{localStorage.setItem(KEY,full);lsOK=true;}catch(e){lsOK=false;}
+  const k=dataKey();
+  if(hData!==null&&k!==hData&&!hMute){UNDO.push(hData);if(UNDO.length>60)UNDO.shift();REDO.length=0;}
+  hData=k;histUI();
+  if(fileHandle){clearTimeout(wTimer);wTimer=setTimeout(writeFile,600);}
+  updateSaveUI();
+}
+function histUI(){$("#undo").disabled=!UNDO.length;$("#redo").disabled=!REDO.length;}
+function histGo(from,to,msg){
+  if(!from.length){toast(msg[1]);return;}
+  to.push(hData);
+  const d=JSON.parse(from.pop());
+  const nd=parseDB({activos:d.a,cfg:d.c,theme:DB.theme,tab:DB.tab});
+  DB=nd;hMute=true;try{save();}finally{hMute=false;}
+  hData=dataKey();histUI();closeModal();render();toast(msg[0]);
+}
+const undo=()=>histGo(UNDO,REDO,["Deshecho","No hay nada que deshacer"]);
+const redo=()=>histGo(REDO,UNDO,["Rehecho","No hay nada que rehacer"]);
+function updateSaveUI(){
+  const n=$("#savest");
+  if(fileHandle){n.textContent="💾 "+fileName;n.className="pill ok";n.title="Se guarda solo en tu archivo y en el navegador";}
+  else if(lsOK){n.textContent="Guardado en el navegador";n.className="pill ok";n.title="Vincula un archivo para no depender del navegador";}
+  else {n.textContent="⚠ SIN GUARDAR";n.className="pill bad";n.title="El navegador no permite guardar: vincula un archivo o exporta el JSON";}
+  const w=$("#warn"),mal=!lsOK&&!fileHandle;
+  w.classList.toggle("on",mal);
+  if(mal)w.innerHTML='<span>⚠ Este navegador no guarda datos de archivos locales: <b>si cierras, pierdes el trabajo</b>.</span>'+
+    '<span style="flex:1"></span><button id="warnLink">Guardar en un archivo</button><button id="warnExp">Exportar JSON</button>';
+  layout();
+}
+function idb(){return new Promise(res=>{try{const q=indexedDB.open("assetscope",1);
+  q.onupgradeneeded=()=>q.result.createObjectStore("kv");q.onsuccess=()=>res(q.result);q.onerror=()=>res(null);}catch(e){res(null);}});}
+async function idbPut(k,v){const d=await idb();if(!d)return;try{d.transaction("kv","readwrite").objectStore("kv").put(v,k);}catch(e){}}
+async function idbGet(k){const d=await idb();if(!d)return null;return new Promise(res=>{try{
+  const q=d.transaction("kv","readonly").objectStore("kv").get(k);q.onsuccess=()=>res(q.result||null);q.onerror=()=>res(null);}catch(e){res(null);}});}
+async function writeFile(){
+  if(!fileHandle)return false;
+  try{const w=await fileHandle.createWritable();await w.write(JSON.stringify(DB,null,2));await w.close();updateSaveUI();return true;}
+  catch(e){toast("No se pudo escribir en el archivo vinculado");return false;}
+}
+const FTYPES=[{description:"Inventario de AssetScope",accept:{"application/json":[".json"]}}];
+async function linkFile(){
+  if(!window.showSaveFilePicker){toast("Tu navegador no permite vincular archivo: usa Exportar › JSON");return;}
+  try{
+    fileHandle=await showSaveFilePicker({suggestedName:"assetscope-inventario.json",types:FTYPES});
+    fileName=fileHandle.name;await idbPut("handle",fileHandle);await idbPut("name",fileName);
+    await writeFile();toast("Guardado automático en "+fileName);
+  }catch(e){}
+  updateSaveUI();
+}
+async function openFile(){
+  if(!window.showOpenFilePicker){toast("Usa Importar para cargar el JSON");return;}
+  try{
+    const [h]=await showOpenFilePicker({types:FTYPES});
+    const d=parseDB(JSON.parse(await (await h.getFile()).text()));if(!d)throw 0;
+    DB=d;fileHandle=h;fileName=h.name;await idbPut("handle",h);await idbPut("name",fileName);
+    setTheme(DB.theme);save();render();toast("Cargado desde "+fileName);
+  }catch(e){toast("No se pudo abrir el archivo");}
+}
+async function restoreHandle(){
+  try{
+    const h=await idbGet("handle");if(!h)return;
+    const perm=await h.queryPermission({mode:"readwrite"});
+    if(perm==="granted"){
+      fileHandle=h;fileName=h.name;
+      try{const d=parseDB(JSON.parse(await (await h.getFile()).text()));if(d){DB=d;setTheme(DB.theme);UNDO=[];REDO=[];hData=dataKey();histUI();render();}}catch(e){}
+    }else toast("Pulsa 💾 Archivo para reconectar "+(await idbGet("name")||"tu archivo"));
+  }catch(e){}
+  updateSaveUI();
+}
+
+/* ---------- avisos ---------- */
+function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("on");clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("on"),2600);}
+function toastUndo(m){
+  const t=$("#toast");t.innerHTML=esc(m)+' <button class="act">Deshacer</button>';
+  t.classList.add("on");clearTimeout(t._t);
+  t.querySelector(".act").onclick=()=>{t.classList.remove("on");undo();};
+  t._t=setTimeout(()=>{t.classList.remove("on");t.textContent="";},30000);
+}
+
+/* ---------- consultas ---------- */
+const view=$("#view"),stage=$("#stage"),veil=$("#veil"),modal=$("#modal");
+let q="",fTipo="",fEstado="",fSala="",sortK="inv",sortD=1,foldOk=true,lvlOn={bad:true,warn:true,ok:true,none:true};
+const activos=()=>DB.activos.filter(a=>a.estado!=="baja");
+const where=a=>[a.ubicacion.sala,a.ubicacion.rack,a.ubicacion.u?"U"+a.ubicacion.u:""].filter(Boolean).join(" › ");
+const what=a=>[a.marca,a.modelo].filter(Boolean).join(" ");
+function hay(a){
+  if(!q)return true;
+  const t=[a.inv,a.nombre,TYPES[a.tipo],a.marca,a.modelo,a.serie,ESTADOS[a.estado].n,a.asignado,where(a),a.compra.proveedor,a.compra.factura,a.compra.centroCoste,a.notas]
+    .join(" ").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
+  return q.split(/\s+/).every(w=>t.includes(w));
+}
+function lvlOf(d){return d<0?"bad":d<=DB.cfg.aviso?"warn":"ok";}
+// cada fecha de fin (garantia, soporte, mantenimiento) de los equipos que no estan de baja
+function events(list){
+  const out=[];
+  (list||activos()).forEach(a=>Object.keys(CICLO).forEach(k=>{const iso=a.ciclo[k];if(!iso)return;const d=days(iso);out.push({a,k,iso,d,lvl:lvlOf(d)});}));
+  return out.sort((x,y)=>x.iso<y.iso?-1:x.iso>y.iso?1:0);
+}
+const sinFechas=list=>(list||activos()).filter(a=>!a.ciclo.garantia&&!a.ciclo.soporte&&!a.ciclo.mantenimiento);
+// el peor estado de un equipo: lo que se pinta en el inventario
+function peor(a){
+  if(a.estado==="baja")return null;
+  let w=null;Object.keys(CICLO).forEach(k=>{const iso=a.ciclo[k];if(!iso)return;const l=lvlOf(days(iso));
+    if(!w||["bad","warn","ok"].indexOf(l)<["bad","warn","ok"].indexOf(w.lvl)||(l===w.lvl&&iso<w.iso))w={k,iso,lvl:l};});
+  return w;
+}
+const edad=a=>a.compra.fecha?-days(a.compra.fecha)/365.25:null;
+
+/* ---------- pintar ---------- */
+function setTab(t){DB.tab=t;$$("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.tab===t));save();render();stage.scrollTop=0;}
+function render(){
+  $$("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.tab===DB.tab));
+  const ev=events(),nb=ev.filter(e=>e.lvl==="bad").length;
+  $("#nBad").textContent=nb?String(nb):"";
+  const n=activos().length;
+  $("#stats").textContent=n+" equipo"+(n===1?"":"s")+(DB.activos.length>n?" · "+(DB.activos.length-n)+" de baja":"");
+  if(DB.tab==="inv")renderInv();else if(DB.tab==="rep")renderRep();else renderCad();
+}
+function evRow(e){
+  const a=e.a;
+  return `<button class="ev ${e.lvl}" data-open="${a.id}">
+    <span class="dot ${e.lvl}"></span>
+    <span class="dt">${fdate(e.iso)}</span>
+    <span class="kind">${CICLO[e.k]}<small>${esc(TYPES[a.tipo])} · ${esc(ESTADOS[a.estado].n)}</small></span>
+    <span class="nm"><b>${esc(a.nombre)}</b><small>${esc([a.inv,what(a),a.serie?"S/N "+a.serie:"",where(a),a.asignado].filter(Boolean).join(" · "))}</small></span>
+    <span class="rel">${e.d<0?"venció ":"vence "}${rel(e.d)}</span></button>`;
+}
+function renderCad(){
+  const list=activos().filter(hay),ev=events(list),sf=sinFechas(list),c={bad:0,warn:0,ok:0};
+  ev.forEach(e=>c[e.lvl]++);
+  const kp=(l,big,lb,sm)=>`<button class="kpi ${l}${lvlOn[l]?"":" off"}" data-lvl="${l}" title="Mostrar u ocultar">
+    <span class="lb"><span class="dot ${l}"></span>${lb}</span><span class="big">${big}</span><small>${sm}</small></button>`;
+  let h=`<div class="vh"><div class="grow"><h2>Qué caduca</h2><p>Fin de garantía, de soporte del fabricante y de contrato de mantenimiento de los equipos que no están de baja, por fecha.${q?` · Filtrado por «${esc(q)}»`:""}</p></div></div>
+  <div class="kpis" id="kpis">
+    ${kp("bad",c.bad,"Vencido","ya sin cobertura")}
+    ${kp("warn",c.warn,"Vence en "+DB.cfg.aviso+" días","hay que renovar o decidir")}
+    ${kp("ok",c.ok,"Al día","con cobertura de sobra")}
+    ${kp("none",sf.length,"Sin fechas","equipos sin ninguna fecha de fin")}
+  </div>`;
+  if(!DB.activos.length){
+    h+=`<div class="empty">Todavía no hay equipos.<br>Pulsa <b>＋ Equipo</b> o tráete tu hoja de inventario con <b>Importar › Desde Excel</b>.</div>`;
+    view.innerHTML=h;return;
+  }
+  const grp=(l,title,rows,foldable)=>{
+    if(!lvlOn[l]||!rows.length)return "";
+    const fold=foldable&&foldOk;
+    return `<div class="grp" id="g_${l}"><button class="gh" data-fold="${foldable?1:0}"><span class="dot ${l}"></span><span>${title} · ${rows.length}</span>${foldable?(fold?"mostrar ▸":"ocultar ▾"):""}</button>${fold?"":rows.join("")}</div>`;
+  };
+  h+=grp("bad","Vencido",ev.filter(e=>e.lvl==="bad").reverse().map(evRow),false);
+  h+=grp("warn","Vence en los próximos "+DB.cfg.aviso+" días",ev.filter(e=>e.lvl==="warn").map(evRow),false);
+  h+=grp("ok","Al día",ev.filter(e=>e.lvl==="ok").map(evRow),true);
+  h+=grp("none","Sin ninguna fecha de fin",sf.map(a=>`<button class="ev none" data-open="${a.id}"><span class="dot none"></span><span class="dt">—</span>
+      <span class="kind">Sin fechas<small>${esc(TYPES[a.tipo])} · ${esc(ESTADOS[a.estado].n)}</small></span>
+      <span class="nm"><b>${esc(a.nombre)}</b><small>${esc([a.inv,what(a),a.serie?"S/N "+a.serie:"",where(a)].filter(Boolean).join(" · "))}</small></span>
+      <span class="rel">añadir fechas ›</span></button>`),false);
+  if(!ev.length&&!sf.length)h+=`<div class="empty">Nada coincide con la búsqueda.</div>`;
+  view.innerHTML=h;
+}
+const COLS=[
+  ["inv","Nº inv."],["nombre","Nombre"],["tipo","Tipo"],["modelo","Marca y modelo"],["serie","Nº de serie"],["estado","Estado"],
+  ["sala","Ubicación"],["asignado","Asignado a"],["fecha","Compra"],["cad","Cobertura"]];
+function sortVal(a,k){
+  switch(k){
+    case "tipo":return TYPES[a.tipo];case "modelo":return what(a);case "estado":return ESTADOS[a.estado].n;
+    case "sala":return where(a);case "fecha":return a.compra.fecha||"9999";
+    case "cad":{const w=peor(a);return w?w.iso:"9999";}
+    default:return str(a[k]);
+  }
+}
+function invList(){
+  return DB.activos.filter(a=>hay(a)&&(!fTipo||a.tipo===fTipo)&&(!fEstado||a.estado===fEstado)&&(!fSala||a.ubicacion.sala===fSala))
+    .sort((x,y)=>sortVal(x,sortK).localeCompare(sortVal(y,sortK),"es",{numeric:true})*sortD);
+}
+function renderInv(){
+  const salas=[...new Set(DB.activos.map(a=>a.ubicacion.sala).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"es"));
+  if(fSala&&!salas.includes(fSala))fSala="";
+  const list=invList();
+  const opt=(o,v,all)=>`<option value="">${all}</option>`+Object.keys(o).map(k=>`<option value="${k}"${k===v?" selected":""}>${esc(o[k].n||o[k])}</option>`).join("");
+  let h=`<div class="vh"><div class="grow"><h2>Inventario</h2><p>Clic en una fila para abrir su ficha. Clic en un encabezado para ordenar.</p></div>
+    <button class="btn sm" id="labSel" title="Etiquetas con QR de los equipos que ves en la tabla">🏷 Etiquetas de esta lista</button></div>
+  <div class="filters">
+    <select id="fTipo">${opt(TYPES,fTipo,"Todos los tipos")}</select>
+    <select id="fEstado">${opt(ESTADOS,fEstado,"Todos los estados")}</select>
+    <select id="fSala"><option value="">Todas las ubicaciones</option>${salas.map(s=>`<option${s===fSala?" selected":""}>${esc(s)}</option>`).join("")}</select>
+    ${fTipo||fEstado||fSala?'<button class="btn sm" id="fClr">Quitar filtros</button>':""}
+  </div>`;
+  if(!DB.activos.length){view.innerHTML=h+`<div class="empty">Todavía no hay equipos.<br>Pulsa <b>＋ Equipo</b> o usa <b>Importar › Desde Excel</b>.</div>`;bindInv();return;}
+  h+=`<div class="tw"><table class="inv"><tr>${COLS.map(([k,t])=>`<th data-sort="${k}" class="${k===sortK?"on":""}">${t}${k===sortK?(sortD>0?" ▴":" ▾"):""}</th>`).join("")}</tr>
+  ${list.map(a=>{const w=peor(a),e=ESTADOS[a.estado];
+    return `<tr class="r" data-open="${a.id}" data-id="${a.id}">
+      <td class="mono">${esc(a.inv)}</td><td><b>${esc(a.nombre)}</b></td><td>${esc(TYPES[a.tipo])}</td><td>${esc(what(a))}</td>
+      <td class="mono">${esc(a.serie)}</td>
+      <td><span class="stt" style="color:${e.c};border-color:${e.c}88">${e.n}</span></td>
+      <td>${esc(where(a))}</td><td>${esc(a.asignado)}</td>
+      <td class="mono dim">${fdate(a.compra.fecha)}</td>
+      <td>${w?`<span class="dl" title="${CICLO[w.k]}"><span class="dot ${w.lvl}"></span>${fdate(w.iso)} · ${CICLO_C[w.k].replace("Fin de ","")}</span>`:'<span class="dim">—</span>'}</td></tr>`;}).join("")}
+  </table></div><div class="foot-n">${list.length} de ${DB.activos.length} equipos${q?` · búsqueda «${esc(q)}»`:""}</div>`;
+  view.innerHTML=h;bindInv();
+}
+function bindInv(){
+  const on=(id,f)=>{const n=$(id);if(n)n.onchange=ev=>{f(ev.target.value);renderInv();};};
+  on("#fTipo",v=>fTipo=v);on("#fEstado",v=>fEstado=v);on("#fSala",v=>fSala=v);
+  const c=$("#fClr");if(c)c.onclick=()=>{fTipo=fEstado=fSala="";renderInv();};
+  const l=$("#labSel");if(l)l.onclick=()=>labelDialog(invList());
+}
+function bars(rows,tot,money){
+  const mx=Math.max(1,...rows.map(r=>r[1]));
+  return rows.map(([lb,v,sub])=>`<div class="brow"><b title="${esc(lb)}">${esc(lb)}</b><span>${money?eur(v):v}${sub?" · "+sub:""}</span><div class="bar"><i style="width:${(v/mx*100).toFixed(1)}%"></i></div></div>`).join("")
+    ||'<div class="hint">Sin datos</div>';
+}
+function repData(){
+  const act=activos(),cfg=DB.cfg;
+  const valor=act.reduce((s,a)=>s+a.compra.precio,0);
+  const viejos=act.filter(a=>{const e=edad(a);return e!=null&&e>=cfg.viejo;});
+  const ev=events(act),venc=ev.filter(e=>e.lvl==="bad");
+  const anio=ev.filter(e=>e.d>=0&&e.d<=365);
+  const ren=new Map();anio.forEach(e=>{if(!ren.has(e.a.id))ren.set(e.a.id,e.a.ciclo.renovacion||e.a.compra.precio);});
+  const coste=[...ren.values()].reduce((s,v)=>s+v,0);
+  const porTipo={};act.forEach(a=>{const t=porTipo[a.tipo]||(porTipo[a.tipo]={n:0,v:0});t.n++;t.v+=a.compra.precio;});
+  const porEst={};DB.activos.forEach(a=>porEst[a.estado]=(porEst[a.estado]||0)+1);
+  const ed=[["Menos de 1 año",0],["De 1 a 3 años",0],["De 3 a "+cfg.viejo+" años",0],[cfg.viejo+" años o más",0],["Sin fecha de compra",0]];
+  act.forEach(a=>{const e=edad(a);ed[e==null?4:e<1?0:e<3?1:e<cfg.viejo?2:3][1]++;});
+  if(cfg.viejo<=3){ed[1][0]="De 1 a "+cfg.viejo+" años";ed.splice(2,1);}
+  const porSala={};act.forEach(a=>{const s=a.ubicacion.sala||"Sin ubicación";porSala[s]=(porSala[s]||0)+1;});
+  return {act,valor,viejos,venc,anio,ren,coste,porTipo,porEst,ed,porSala};
+}
+function renderRep(){
+  const r=repData(),cfg=DB.cfg;
+  const tipos=Object.entries(r.porTipo).sort((a,b)=>b[1].n-a[1].n);
+  let h=`<div class="vh"><div class="grow"><h2>Informe de parque</h2><p>Equipos que no están de baja. El PDF lleva además el inventario completo.</p></div>
+    <button class="btn sm" id="rCsv">📊 Excel</button><button class="btn sm acc" id="rPdf">📄 Sacar el PDF</button></div>
+  <div class="cards">
+    <div class="card"><div class="lb">Equipos</div><div class="big">${r.act.length}</div><small>${tipos.slice(0,3).map(([t,v])=>v.n+" "+tipoN(t,v.n)).join(" · ")||"—"}</small></div>
+    <div class="card"><div class="lb">Valor de compra</div><div class="big">${eur(r.valor)}</div><small>${(n=>n?n+(n===1?" equipo":" equipos")+" sin precio apuntado":"todos con precio")(r.act.filter(a=>!a.compra.precio).length)}</small></div>
+    <div class="card warn"><div class="lb">Con ${cfg.viejo} años o más</div><div class="big">${r.viejos.length}</div><small>${r.act.length?Math.round(r.viejos.length/r.act.length*100):0} % del parque · ${eur(r.viejos.reduce((s,a)=>s+a.compra.precio,0))} en origen</small></div>
+    <div class="card bad"><div class="lb">Caduca en 12 meses</div><div class="big">${r.ren.size}</div><small>Renovarlo costaría unos <b>${eur(r.coste)}</b></small></div>
+  </div>
+  <div class="cols">
+    <div class="box"><h3>Por tipo</h3>${bars(tipos.map(([t,v])=>[TYPES[t],v.n,v.v?eur(v.v):""]))}</div>
+    <div class="box"><h3>Por antigüedad</h3>${bars(r.ed.filter(x=>x[1]||!/Sin fecha/.test(x[0])))}</div>
+    <div class="box"><h3>Por estado</h3>${bars(Object.keys(ESTADOS).filter(k=>r.porEst[k]).map(k=>[ESTADOS[k].n,r.porEst[k]]))}
+      <h3 style="margin-top:14px">Por ubicación</h3>${bars(Object.entries(r.porSala).sort((a,b)=>b[1]-a[1]).slice(0,6))}</div>
+  </div>
+  <div class="box" style="margin-bottom:18px"><h3>Qué caduca en los próximos 12 meses y cuánto costaría renovarlo</h3>
+    ${r.anio.length?`<table class="rep"><tr><th>Fecha</th><th>Qué vence</th><th>Equipo</th><th>Marca y modelo</th><th>Ubicación</th><th class="num">Renovación</th></tr>
+    ${(()=>{const vistos=new Set();return r.anio.map(e=>{const pr=!vistos.has(e.a.id);vistos.add(e.a.id);
+      const v=e.a.ciclo.renovacion||e.a.compra.precio;
+      return `<tr class="r" data-open="${e.a.id}"><td>${fdate(e.iso)}</td><td>${CICLO[e.k]}</td><td><b>${esc(e.a.nombre)}</b></td><td>${esc(what(e.a))}</td><td>${esc(where(e.a))}</td>
+        <td class="num">${pr?(v?eur(v)+(e.a.ciclo.renovacion?"":" *"):"—"):"<span class='hint'>ya contado</span>"}</td></tr>`;}).join("");})()}
+    <tr class="tot"><td colspan="5">Total estimado (${r.ren.size} equipos)</td><td class="num">${eur(r.coste)}</td></tr></table>
+    <div class="hint" style="margin-top:8px">Se usa el <b>coste de renovación</b> de la ficha. Si no lo tiene, el precio de compra (marcado con *). Cada equipo cuenta una vez.</div>`
+    :'<div class="hint">Nada vence en los próximos 12 meses.</div>'}
+  </div>
+  ${r.viejos.length?`<div class="box"><h3>Equipos con ${cfg.viejo} años o más</h3><table class="rep"><tr><th>Equipo</th><th>Tipo</th><th>Marca y modelo</th><th>Compra</th><th class="num">Antigüedad</th><th>Ubicación</th></tr>
+    ${r.viejos.sort((a,b)=>a.compra.fecha<b.compra.fecha?-1:1).map(a=>`<tr class="r" data-open="${a.id}"><td><b>${esc(a.nombre)}</b></td><td>${esc(TYPES[a.tipo])}</td><td>${esc(what(a))}</td><td>${fdate(a.compra.fecha)}</td><td class="num">${String(Math.round(edad(a)*10)/10).replace(".",",")} años</td><td>${esc(where(a))}</td></tr>`).join("")}</table></div>`:""}`;
+  view.innerHTML=h;
+  $("#rPdf").onclick=expPDF;$("#rCsv").onclick=expCSV;
+}
+
+/* ---------- interaccion de la vista ---------- */
+view.addEventListener("click",ev=>{
+  const o=ev.target.closest("[data-open]");if(o){openAsset(byId(o.dataset.open));return;}
+  const k=ev.target.closest("[data-lvl]");if(k){const l=k.dataset.lvl;lvlOn[l]=!lvlOn[l];if(l==="ok"&&lvlOn.ok)foldOk=false;renderCad();return;}
+  const f=ev.target.closest(".gh[data-fold='1']");if(f){foldOk=!foldOk;renderCad();return;}
+  const s=ev.target.closest("[data-sort]");if(s){const k2=s.dataset.sort;if(sortK===k2)sortD=-sortD;else{sortK=k2;sortD=1;}renderInv();}
+});
+$("#tabs").onclick=ev=>{const b=ev.target.closest("[data-tab]");if(b)setTab(b.dataset.tab);};
+const search=$("#search");
+search.oninput=()=>{q=search.value.trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");render();};
+search.onkeydown=ev=>{if(ev.key==="Escape"){search.value="";q="";render();search.blur();}};
+
+/* ---------- ficha de equipo ---------- */
+function closeModal(){veil.classList.remove("on");modal.className="modal";modal.innerHTML="";modal.onkeydown=modal.oninput=modal.onchange=null;modal.removeAttribute("data-dirty");}
+veil.addEventListener("mousedown",ev=>{if(ev.target===veil)veil._down=true;});
+veil.addEventListener("click",ev=>{if(ev.target===veil&&veil._down&&!modal.hasAttribute("data-dirty"))closeModal();veil._down=false;});
+const fldDate=(id,lb,v)=>`<div class="fld"><label>${lb}</label><input type="date" id="${id}" value="${esc(v)}"><div class="st" id="${id}_st"></div></div>`;
+const fld=(id,lb,v,ph,cls)=>`<div class="fld"><label>${lb}</label><input id="${id}" value="${esc(v)}" placeholder="${esc(ph||"")}"${cls?` class="${cls}"`:""} autocomplete="off"></div>`;
+function datalist(id,vals){return `<datalist id="${id}">${[...new Set(vals.filter(Boolean))].sort((a,b)=>a.localeCompare(b,"es")).map(v=>`<option value="${esc(v)}">`).join("")}</datalist>`;}
+function openAsset(a0,isNew){
+  if(!a0)return;
+  const a=JSON.parse(JSON.stringify(a0));
+  const all=DB.activos;
+  modal.className="modal wide";
+  modal.innerHTML=`<h3>${isNew?"Nuevo equipo":esc(a.nombre)} <span class="inv">${esc(a.inv)}</span><span style="flex:1"></span>
+    ${isNew?"":`<span class="stt" style="color:${ESTADOS[a.estado].c};border-color:${ESTADOS[a.estado].c}88">${ESTADOS[a.estado].n}</span>`}</h3>
+  <div class="body">
+    <fieldset class="fs"><legend>Identidad</legend>
+      <div class="g4">${fld("f_nombre","Nombre",a.nombre,"srv-app-01, pt-ana…")}
+        <div class="fld"><label>Tipo</label><select id="f_tipo">${Object.keys(TYPES).map(k=>`<option value="${k}"${k===a.tipo?" selected":""}>${TYPES[k]}</option>`).join("")}</select></div>
+        ${fld("f_inv","Nº de inventario",a.inv,"","mono")}
+        <div class="fld"><label>Estado</label><select id="f_estado">${Object.keys(ESTADOS).map(k=>`<option value="${k}"${k===a.estado?" selected":""}>${ESTADOS[k].n}</option>`).join("")}</select></div></div>
+      <div class="g3" style="margin-top:10px">${fld("f_marca","Marca",a.marca,"Dell, HP, Lenovo…")}${fld("f_modelo","Modelo",a.modelo,"")}${fld("f_serie","Nº de serie",a.serie,"Service tag / S/N","mono")}</div>
+      <div class="warnline" id="f_dup" style="margin-top:6px"></div>
+    </fieldset>
+    <fieldset class="fs"><legend>Dónde está y quién lo tiene</legend>
+      <div class="g4">${fld("f_sala","Sala o ubicación",a.ubicacion.sala,"CPD, Despacho 3, Almacén…")}${fld("f_rack","Rack",a.ubicacion.rack,"si está rackeado")}${fld("f_u","U",a.ubicacion.u,"","mono")}${fld("f_asig","Asignado a",a.asignado,"persona o departamento")}</div>
+    </fieldset>
+    <fieldset class="fs"><legend>Ciclo de vida</legend>
+      <div class="g4">${fldDate("f_gar","Fin de garantía",a.ciclo.garantia)}${fldDate("f_sop","Fin de soporte del fabricante",a.ciclo.soporte)}${fldDate("f_man","Fin de mantenimiento",a.ciclo.mantenimiento)}
+      ${fld("f_ren","Coste de renovación €",a.ciclo.renovacion||"","estimado","mono")}</div>
+    </fieldset>
+    <fieldset class="fs"><legend>Compra</legend>
+      <div class="g4">${fld("f_prov","Proveedor",a.compra.proveedor,"")}${`<div class="fld"><label>Fecha de compra</label><input type="date" id="f_fc" value="${esc(a.compra.fecha)}"><div class="st" id="f_fc_st"></div></div>`}
+      ${fld("f_fac","Nº de factura",a.compra.factura,"","mono")}${fld("f_pre","Precio €",a.compra.precio||"","","mono")}</div>
+      <div class="g4" style="margin-top:10px">${fld("f_cc","Centro de coste",a.compra.centroCoste,"")}</div>
+    </fieldset>
+    <div class="g2">
+      <fieldset class="fs"><legend>Historial · averías y notas con fecha</legend>
+        <div class="hl" id="f_hist"></div>
+        <div class="addrow"><input type="date" id="h_d" value="${todayIso()}" style="width:140px"><input id="h_t" placeholder="Qué ha pasado…" style="flex:1"><button class="btn sm" id="h_add">Añadir</button></div>
+      </fieldset>
+      <fieldset class="fs"><legend>Adjuntos · ruta o enlace, nunca el archivo</legend>
+        <div class="hl" id="f_adj"></div>
+        <div class="addrow"><input id="j_n" placeholder="Factura, contrato…" style="width:120px"><input id="j_r" placeholder="\\\\servidor\\carpeta\\archivo.pdf o https://…" style="flex:1"><button class="btn sm" id="j_add">Añadir</button></div>
+      </fieldset>
+    </div>
+    <div class="fld"><label>Notas</label><textarea id="f_notas">${esc(a.notas)}</textarea></div>
+    ${datalist("dl_sala",all.map(x=>x.ubicacion.sala))}${datalist("dl_rack",all.map(x=>x.ubicacion.rack))}${datalist("dl_marca",all.map(x=>x.marca))}
+    ${datalist("dl_prov",all.map(x=>x.compra.proveedor))}${datalist("dl_cc",all.map(x=>x.compra.centroCoste))}${datalist("dl_asig",all.map(x=>x.asignado))}
+  </div>
+  <div class="foot">
+    ${isNew?"":'<button class="btn danger" id="f_del">Eliminar</button><button class="btn" id="f_dupB">Duplicar</button><button class="btn" id="f_lab">🏷 Etiqueta</button>'}
+    <span style="flex:1"></span>
+    <button class="btn" id="m_cancel">Cancelar</button><button class="btn acc" id="m_ok">${isNew?"Crear":"Guardar"}</button>
+  </div>`;
+  veil.classList.add("on");
+  [["f_sala","dl_sala"],["f_rack","dl_rack"],["f_marca","dl_marca"],["f_prov","dl_prov"],["f_cc","dl_cc"],["f_asig","dl_asig"]].forEach(([i,l])=>$("#"+i).setAttribute("list",l));
+  const dirty=()=>modal.setAttribute("data-dirty","1");
+  const drawHist=()=>{
+    $("#f_hist").innerHTML=a.historial.length?a.historial.map((h,i)=>({h,i})).sort((x,y)=>x.h.fecha<y.h.fecha?1:-1)
+      .map(({h,i})=>`<div class="it"><span class="d">${fdate(h.fecha)||"—"}</span><span class="t">${esc(h.texto)}</span><button data-hx="${i}" title="Quitar">✕</button></div>`).join("")
+      :'<div class="hint">Sin anotaciones.</div>';
+  };
+  const isUrl=r=>/^https?:\/\//i.test(r);
+  const drawAdj=()=>{
+    $("#f_adj").innerHTML=a.adjuntos.length?a.adjuntos.map((j,i)=>`<div class="it"><span class="t"><b>${esc(j.nombre||"Adjunto")}</b><br>
+      ${isUrl(j.ruta)?`<a href="${esc(j.ruta)}" target="_blank" rel="noopener noreferrer">${esc(j.ruta)}</a>`:`<span style="font-family:var(--m);font-size:11px">${esc(j.ruta)}</span>`}</span>
+      <button class="cp" data-jc="${i}" title="Copiar la ruta">⧉</button><button data-jx="${i}" title="Quitar">✕</button></div>`).join("")
+      :'<div class="hint">Pega la ruta de la factura o del contrato en la carpeta de red.</div>';
+  };
+  drawHist();drawAdj();
+  $("#f_hist").onclick=ev=>{const b=ev.target.closest("[data-hx]");if(!b)return;a.historial.splice(+b.dataset.hx,1);dirty();drawHist();};
+  $("#f_adj").onclick=ev=>{
+    const x=ev.target.closest("[data-jx]");if(x){a.adjuntos.splice(+x.dataset.jx,1);dirty();drawAdj();return;}
+    const c=ev.target.closest("[data-jc]");if(c)copyText(a.adjuntos[+c.dataset.jc].ruta);
+  };
+  const addH=()=>{const t=$("#h_t").value.trim();if(!t){$("#h_t").focus();return;}a.historial.push({fecha:isoOk($("#h_d").value)||todayIso(),texto:t});$("#h_t").value="";dirty();drawHist();};
+  const addJ=()=>{const r=$("#j_r").value.trim();if(!r){$("#j_r").focus();return;}a.adjuntos.push({nombre:$("#j_n").value.trim(),ruta:r});$("#j_r").value="";$("#j_n").value="";dirty();drawAdj();};
+  $("#h_add").onclick=addH;$("#j_add").onclick=addJ;
+  $("#h_t").onkeydown=ev=>{if(ev.key==="Enter"){ev.preventDefault();addH();}};
+  $("#j_r").onkeydown=ev=>{if(ev.key==="Enter"){ev.preventDefault();addJ();}};
+  // estado de cada fecha mientras se escribe, y aviso de numero de serie o inventario repetidos
+  const live=()=>{
+    [["f_gar"],["f_sop"],["f_man"]].forEach(([id])=>{const v=isoOk($("#"+id).value),st=$("#"+id+"_st");
+      if(!v){st.textContent="";st.className="st";return;}const d=days(v),l=lvlOf(d);st.textContent=(d<0?"venció ":"vence ")+rel(d);st.className="st "+l;});
+    const fc=isoOk($("#f_fc").value),st=$("#f_fc_st");
+    if(fc){const e=-days(fc)/365.25;st.textContent=e<0?"fecha futura":"hace "+span(-days(fc));st.className="st"+(e>=DB.cfg.viejo?" warn":"");}else{st.textContent="";st.className="st";}
+    const s=$("#f_serie").value.trim().toLowerCase(),inv=$("#f_inv").value.trim().toLowerCase(),msg=[];
+    const ds=s&&all.find(x=>x.id!==a.id&&x.serie.toLowerCase()===s);if(ds)msg.push("Ese número de serie ya lo tiene "+ds.nombre+" ("+ds.inv+")");
+    const di=inv&&all.find(x=>x.id!==a.id&&x.inv.toLowerCase()===inv);if(di)msg.push("El nº de inventario "+di.inv+" ya es de "+di.nombre);
+    $("#f_dup").textContent=msg.join(" · ");
+  };
+  modal.oninput=()=>{dirty();live();};modal.onchange=live;live();
+  setTimeout(()=>{const n=$("#f_nombre");n.focus();if(isNew)n.select();},40);
+  $("#m_cancel").onclick=closeModal;
+  $("#m_ok").onclick=()=>{
+    const v=id=>$("#"+id).value.trim();
+    if(!v("f_nombre")){$("#f_nombre").focus();toast("Ponle un nombre al equipo");return;}
+    const inv=v("f_inv")||nextInv();
+    if(all.some(x=>x.id!==a.id&&x.inv.toLowerCase()===inv.toLowerCase())){$("#f_inv").focus();toast("Ese nº de inventario ya existe");return;}
+    Object.assign(a,{nombre:v("f_nombre"),tipo:$("#f_tipo").value,inv,estado:$("#f_estado").value,marca:v("f_marca"),modelo:v("f_modelo"),serie:v("f_serie"),
+      asignado:v("f_asig"),notas:$("#f_notas").value.trim()});
+    a.ubicacion={sala:v("f_sala"),rack:v("f_rack"),u:v("f_u")};
+    a.compra={proveedor:v("f_prov"),fecha:isoOk(v("f_fc")),factura:v("f_fac"),precio:precio(v("f_pre")),centroCoste:v("f_cc")};
+    a.ciclo={garantia:isoOk(v("f_gar")),soporte:isoOk(v("f_sop")),mantenimiento:isoOk(v("f_man")),renovacion:precio(v("f_ren"))};
+    if(a0.estado!==a.estado&&!isNew)a.historial.push({fecha:todayIso(),texto:"Estado: "+ESTADOS[a0.estado].n+" → "+ESTADOS[a.estado].n});
+    const c=cleanAsset(a);c.id=a.id;
+    const i=DB.activos.findIndex(x=>x.id===a.id);
+    if(i<0)DB.activos.push(c);else DB.activos[i]=c;
+    save();closeModal();render();flashRow(c.id);
+    toast(isNew?"«"+c.nombre+"» creado":"Guardado");
+  };
+  modal.onkeydown=ev=>{if(ev.key==="Escape")closeModal();if(ev.key==="Enter"&&(ev.ctrlKey||ev.metaKey))$("#m_ok").click();};
+  if(isNew)return;
+  const del=$("#f_del");
+  del.onclick=()=>{
+    if(!del.classList.contains("armed")){del.classList.add("armed");del.textContent="¿Seguro? Eliminar";
+      setTimeout(()=>{if(del.isConnected){del.classList.remove("armed");del.textContent="Eliminar";}},4000);
+      toast("Si solo ya no se usa, mejor ponlo «De baja»: así queda en el historial");return;}
+    DB.activos=DB.activos.filter(x=>x.id!==a.id);save();closeModal();render();toastUndo("«"+a.nombre+"» eliminado.");
+  };
+  $("#f_dupB").onclick=()=>{
+    const c=cleanAsset(Object.assign(JSON.parse(JSON.stringify(a0)),{id:nid("a"),inv:nextInv(),serie:"",historial:[],nombre:a0.nombre+" (copia)"}));
+    closeModal();openAsset(c,true);
+  };
+  $("#f_lab").onclick=()=>{closeModal();labelDialog([a0]);};
+}
+function newAsset(){const a=blankAsset();a.inv=nextInv();openAsset(a,true);}
+$("#addBtn").onclick=newAsset;
+function flashRow(id){
+  const r=view.querySelector(`tr[data-id="${id}"]`);if(!r)return;
+  r.scrollIntoView({block:"center"});r.classList.remove("flash");void r.offsetWidth;r.classList.add("flash");
+}
+function copyText(t){
+  const ok=()=>toast("Ruta copiada");
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(ok,()=>fallback());else fallback();
+  function fallback(){const x=document.createElement("textarea");x.value=t;document.body.appendChild(x);x.select();
+    try{document.execCommand("copy");ok();}catch(e){toast("No se pudo copiar");}x.remove();}
+}
+
+/* ---------- ajustes ---------- */
+$("#cfgBtn").onclick=()=>{
+  const c=DB.cfg;
+  modal.innerHTML=`<h3>Ajustes</h3>
+  <div class="body">
+    <div class="g2">
+      <div class="fld"><label>Avisar con cuántos días</label><input id="c_av" type="number" min="1" max="730" value="${c.aviso}"><div class="hint">Lo que vence antes sale en naranja.</div></div>
+      <div class="fld"><label>Equipo viejo a partir de (años)</label><input id="c_vj" type="number" min="1" max="30" value="${c.viejo}"><div class="hint">Para el informe de parque.</div></div>
+    </div>
+    <div class="fld"><label>Empresa (sale en las etiquetas)</label><input id="c_em" value="${esc(c.empresa)}" placeholder="Propiedad de…"></div>
+  </div>
+  <div class="foot"><button class="btn" id="m_cancel">Cancelar</button><button class="btn acc" id="m_ok">Guardar</button></div>`;
+  veil.classList.add("on");
+  $("#m_cancel").onclick=closeModal;
+  $("#m_ok").onclick=()=>{
+    c.aviso=Math.max(1,Math.min(730,Math.round(+$("#c_av").value)||90));
+    c.viejo=Math.max(1,Math.min(30,Math.round(+$("#c_vj").value)||5));
+    c.empresa=$("#c_em").value.trim().slice(0,80);
+    save();closeModal();render();toast("Ajustes guardados");
+  };
+};
+
+/* ---------- codigo QR (modo byte, correccion M, versiones 1 a 20) ---------- */
+const QR=(()=>{
+  const ECC=[-1,10,16,26,18,24,16,18,22,22,26,30,22,22,24,24,28,28,26,26,26];
+  const BLK=[-1,1,1,1,2,2,4,4,4,5,5,5,8,9,9,10,10,11,13,14,16];
+  const raw=v=>{let r=(16*v+128)*v+64;if(v>=2){const n=Math.floor(v/7)+2;r-=(25*n-10)*n-55;if(v>=7)r-=36;}return r;};
+  const dataCw=v=>Math.floor(raw(v)/8)-ECC[v]*BLK[v];
+  const mul=(x,y)=>{let z=0;for(let i=7;i>=0;i--){z=(z<<1)^((z>>>7)*0x11D);z^=((y>>>i)&1)*x;}return z;};
+  function divisor(deg){const r=new Array(deg).fill(0);r[deg-1]=1;let root=1;
+    for(let i=0;i<deg;i++){for(let j=0;j<r.length;j++){r[j]=mul(r[j],root);if(j+1<r.length)r[j]^=r[j+1];}root=mul(root,2);}return r;}
+  function remainder(data,div){const r=div.map(()=>0);
+    data.forEach(b=>{const f=b^r.shift();r.push(0);div.forEach((c,i)=>r[i]^=mul(c,f));});return r;}
+  function alignPos(v,size){if(v===1)return [];const n=Math.floor(v/7)+2,step=Math.ceil((v*4+4)/(n*2-2))*2,r=[6];
+    for(let p=size-7;r.length<n;p-=step)r.splice(1,0,p);return r;}
+  return function encode(text){
+    const bytes=[...new TextEncoder().encode(text)];
+    const eci=bytes.some(b=>b>127)?12:0;                // ECI 26: avisa al lector de que el texto va en UTF-8 (tildes y eñes)
+    let v=1;for(;v<=20;v++){if(eci+4+(v<=9?8:16)+bytes.length*8<=dataCw(v)*8)break;}
+    if(v>20)throw new Error("Texto demasiado largo para el QR");
+    const bits=[];const put=(val,len)=>{for(let i=len-1;i>=0;i--)bits.push((val>>>i)&1);};
+    if(eci){put(7,4);put(26,8);}
+    put(4,4);put(bytes.length,v<=9?8:16);bytes.forEach(b=>put(b,8));
+    const cap=dataCw(v)*8;put(0,Math.min(4,cap-bits.length));put(0,(8-bits.length%8)%8);
+    for(let p=0xEC;bits.length<cap;p^=0xEC^0x11)put(p,8);
+    const data=[];for(let i=0;i<bits.length;i+=8)data.push(bits.slice(i,i+8).reduce((a,b)=>a<<1|b,0));
+    // bloques de correccion de errores e intercalado
+    const nb=BLK[v],el=ECC[v],rc=Math.floor(raw(v)/8),ns=nb-rc%nb,sl=Math.floor(rc/nb),div=divisor(el),blocks=[];
+    for(let i=0,k=0;i<nb;i++){const d=data.slice(k,k+sl-el+(i<ns?0:1));k+=d.length;const e=remainder(d,div);if(i<ns)d.push(0);blocks.push(d.concat(e));}
+    const cw=[];for(let i=0;i<blocks[0].length;i++)blocks.forEach((b,j)=>{if(i!==sl-el||j>=ns)cw.push(b[i]);});
+    // matriz
+    const size=v*4+17,M=[],F=[];for(let y=0;y<size;y++){M.push(new Array(size).fill(false));F.push(new Array(size).fill(false));}
+    const set=(x,y,d)=>{M[y][x]=d;F[y][x]=true;};
+    for(let i=0;i<size;i++){set(6,i,i%2===0);set(i,6,i%2===0);}
+    [[3,3],[size-4,3],[3,size-4]].forEach(([cx,cy])=>{for(let dy=-4;dy<=4;dy++)for(let dx=-4;dx<=4;dx++){
+      const x=cx+dx,y=cy+dy,dd=Math.max(Math.abs(dx),Math.abs(dy));if(x>=0&&x<size&&y>=0&&y<size)set(x,y,dd!==2&&dd!==4);}});
+    const ap=alignPos(v,size),na=ap.length;
+    for(let i=0;i<na;i++)for(let j=0;j<na;j++){if((i===0&&j===0)||(i===0&&j===na-1)||(i===na-1&&j===0))continue;
+      for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++)set(ap[i]+dx,ap[j]+dy,Math.max(Math.abs(dx),Math.abs(dy))!==1);}
+    const fmtBits=mask=>{const d=(0<<3)|mask;let r=d;for(let i=0;i<10;i++)r=(r<<1)^((r>>>9)*0x537);return ((d<<10)|r)^0x5412;};
+    const drawFmt=mask=>{const b=fmtBits(mask),g=i=>((b>>>i)&1)!==0;
+      for(let i=0;i<=5;i++)set(8,i,g(i));set(8,7,g(6));set(8,8,g(7));set(7,8,g(8));for(let i=9;i<15;i++)set(14-i,8,g(i));
+      for(let i=0;i<8;i++)set(size-1-i,8,g(i));for(let i=8;i<15;i++)set(8,size-15+i,g(i));set(8,size-8,true);};
+    drawFmt(0);
+    if(v>=7){let r=v;for(let i=0;i<12;i++)r=(r<<1)^((r>>>11)*0x1F25);const b=(v<<12)|r;
+      for(let i=0;i<18;i++){const bit=((b>>>i)&1)!==0,aa=size-11+i%3,bb=Math.floor(i/3);set(aa,bb,bit);set(bb,aa,bit);}}
+    let i=0;
+    for(let right=size-1;right>=1;right-=2){if(right===6)right=5;
+      for(let vert=0;vert<size;vert++)for(let j=0;j<2;j++){const x=right-j,up=((right+1)&2)===0,y=up?size-1-vert:vert;
+        if(!F[y][x]&&i<cw.length*8){M[y][x]=((cw[i>>>3]>>>(7-(i&7)))&1)!==0;i++;}}}
+    const MASKS=[(x,y)=>(x+y)%2===0,(x,y)=>y%2===0,(x,y)=>x%3===0,(x,y)=>(x+y)%3===0,(x,y)=>(Math.floor(x/3)+Math.floor(y/2))%2===0,
+      (x,y)=>x*y%2+x*y%3===0,(x,y)=>(x*y%2+x*y%3)%2===0,(x,y)=>((x+y)%2+x*y%3)%2===0];
+    const apply=m=>{for(let y=0;y<size;y++)for(let x=0;x<size;x++)if(!F[y][x]&&MASKS[m](x,y))M[y][x]=!M[y][x];};
+    // penalizacion simplificada: rachas, bloques 2x2 y equilibrio de oscuros
+    const penalty=()=>{let p=0,dark=0;
+      for(let y=0;y<size;y++){let run=1;for(let x=1;x<=size;x++){if(x<size&&M[y][x]===M[y][x-1])run++;else{if(run>=5)p+=run-2;run=1;}}}
+      for(let x=0;x<size;x++){let run=1;for(let y=1;y<=size;y++){if(y<size&&M[y][x]===M[y-1][x])run++;else{if(run>=5)p+=run-2;run=1;}}}
+      for(let y=0;y<size-1;y++)for(let x=0;x<size-1;x++){const c=M[y][x];if(c===M[y][x+1]&&c===M[y+1][x]&&c===M[y+1][x+1])p+=3;}
+      for(let y=0;y<size;y++)for(let x=0;x<size;x++)if(M[y][x])dark++;
+      return p+Math.floor(Math.abs(dark*20-size*size*10)/(size*size))*10;};
+    let best=0,bp=Infinity;
+    for(let m=0;m<8;m++){apply(m);drawFmt(m);const p=penalty();if(p<bp){bp=p;best=m;}apply(m);}
+    apply(best);drawFmt(best);
+    return M;
+  };
+})();
+function qrSVG(text){
+  const M=QR(text),n=M.length,b=4;let d="";
+  for(let y=0;y<n;y++)for(let x=0;x<n;x++)if(M[y][x])d+=`M${x+b},${y+b}h1v1h-1z`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${n+2*b} ${n+2*b}" shape-rendering="crispEdges"><rect width="100%" height="100%" fill="#fff"/><path d="${d}" fill="#000"/></svg>`;
+}
+function qrText(a){
+  const c=DB.cfg;
+  if(c.qr==="enlace"&&c.qrBase)return c.qrBase.replace(/#.*$/,"")+"#inv="+encodeURIComponent(a.inv);
+  return [a.inv,a.nombre,what(a),a.serie?"S/N "+a.serie:"",a.ciclo.garantia?"Garantía hasta "+fdate(a.ciclo.garantia):"",c.empresa].filter(Boolean).join("\n");
+}
+function labelHTML(a){
+  return `<div class="lab">${qrSVG(qrText(a))}<div class="lt"><b>${esc(a.inv)}</b><span>${esc(a.nombre)}</span><span>${esc(what(a))}</span>
+    ${a.serie?`<span>S/N ${esc(a.serie)}</span>`:""}${DB.cfg.empresa?`<span class="own">${esc(DB.cfg.empresa)}</span>`:""}</div></div>`;
+}
+function labelDialog(list){
+  list=(list||DB.activos).filter(Boolean);
+  if(!list.length){toast("No hay equipos para etiquetar");return;}
+  const c=DB.cfg,ex=list[0];
+  modal.innerHTML=`<h3>Etiquetas con QR · ${list.length} equipo${list.length===1?"":"s"}</h3>
+  <div class="body">
+    <div class="fld"><label>Qué lleva el QR</label><select id="l_mode">
+      <option value="texto"${c.qr==="texto"?" selected":""}>Los datos del equipo — se leen con cualquier móvil, sin conexión</option>
+      <option value="enlace"${c.qr==="enlace"?" selected":""}>Un enlace que abre su ficha en AssetScope</option></select></div>
+    <div class="fld" id="l_bw"><label>Dirección donde abres AssetScope</label><input id="l_base" class="mono" value="${esc(c.qrBase)}" placeholder="https://intranet.tuempresa.es/assetscope/">
+      <div class="hint">El QR abre esa dirección con <b>#inv=${esc(ex.inv)}</b> al final y AssetScope salta a la ficha. Los datos están en el navegador de quien lo abre, así que úsalo con un archivo vinculado en una carpeta compartida.</div></div>
+    <div class="fld"><label>Empresa (pie de la etiqueta)</label><input id="l_emp" value="${esc(c.empresa)}" placeholder="Propiedad de…"></div>
+    <div class="qrprev" id="l_prev"></div>
+    <div class="hint">Hoja A4 de 3 × 8 etiquetas de 70 × 37 mm (Apli 1274, Avery L7160 y similares). En el diálogo de impresión deja la escala al <b>100 %</b>.</div>
+  </div>
+  <div class="foot"><button class="btn" id="m_cancel">Cancelar</button><button class="btn acc" id="m_ok">🖨 Imprimir</button></div>`;
+  veil.classList.add("on");
+  const read=()=>{c.qr=$("#l_mode").value;const b=$("#l_base").value.trim();c.qrBase=/^https?:\/\//i.test(b)?b.slice(0,300):"";c.empresa=$("#l_emp").value.trim().slice(0,80);};
+  const prev=()=>{read();$("#l_bw").style.display=c.qr==="enlace"?"":"none";
+    let s;try{s=qrSVG(qrText(ex));}catch(e){s="";}
+    $("#l_prev").innerHTML=s+`<div class="lt"><b>${esc(ex.inv)}</b><span>${esc(ex.nombre)}</span><span>${esc(what(ex))}</span>${ex.serie?`<span>S/N ${esc(ex.serie)}</span>`:""}${c.empresa?`<span>${esc(c.empresa)}</span>`:""}</div>`;
+    if(c.qr==="enlace"&&!c.qrBase)$("#l_prev").insertAdjacentHTML("beforeend",'<div class="lt" style="color:#b00">Falta la dirección (debe empezar por https://)</div>');};
+  modal.oninput=prev;modal.onchange=prev;prev();
+  $("#m_cancel").onclick=()=>{closeModal();};
+  $("#m_ok").onclick=()=>{
+    read();if(c.qr==="enlace"&&!c.qrBase){toast("Escribe la dirección donde abres AssetScope");return;}
+    save();closeModal();
+    let h="";try{for(let i=0;i<list.length;i+=24)h+=`<div class="sheet${i?" pb":""}">${list.slice(i,i+24).map(labelHTML).join("")}</div>`;}
+    catch(e){toast(e.message);return;}
+    $("#print").innerHTML=h;document.body.classList.add("labels");
+    setTimeout(()=>{window.print();},300);
+  };
+}
+addEventListener("afterprint",()=>document.body.classList.remove("labels"));
+
+/* ---------- exportar ---------- */
+function dl(blob,name){
+  try{const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;a.style.display="none";
+    document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},8000);return true;}catch(err){return false;}
+}
+// muestra el resultado para poder guardarlo a mano si el navegador bloquea la descarga
+function deliver(blob,name,text){
+  dl(blob,name);
+  const url=URL.createObjectURL(blob);
+  modal.innerHTML=`<h3>${esc(name)}</h3>
+  <div class="body"><textarea id="sv_txt" spellcheck="false" style="min-height:190px;font-family:var(--m);font-size:11px;width:100%;background:var(--bg2);border:1.5px solid var(--line2);border-radius:8px;padding:8px"></textarea>
+    <div class="hint">Debería haberse descargado ya. Si no aparece nada (algunos navegadores bloquean las descargas cuando el HTML se abre desde una carpeta local), usa los botones de abajo.</div></div>
+  <div class="foot"><button class="btn" id="sv_copy">Copiar todo</button><button class="btn" id="sv_open">Abrir en pestaña nueva</button>
+    <button class="btn acc" id="sv_dl">Descargar otra vez</button><button class="btn" id="sv_close">Cerrar</button></div>`;
+  veil.classList.add("on");$("#sv_txt").value=text||"";
+  $("#sv_dl").onclick=()=>dl(blob,name);
+  $("#sv_open").onclick=()=>{const w=window.open(url,"_blank");if(!w)toast("El navegador ha bloqueado la ventana nueva");};
+  $("#sv_close").onclick=()=>{URL.revokeObjectURL(url);closeModal();};
+  $("#sv_copy").onclick=()=>{const t=$("#sv_txt");t.select();try{document.execCommand("copy");toast("Copiado al portapapeles");}catch(err){toast("Selecciona el texto y copia con Ctrl+C");}};
+}
+const stamp=()=>todayIso();
+const csvQ=v=>{let t=String(v==null?"":v);if(/^[=+\-@\t\r]/.test(t))t="'"+t;return '"'+t.replace(/"/g,'""')+'"';};   // evita formulas al abrirlo en Excel
+const num=n=>n?String(n).replace(".",","):"";
+const CSV_HEAD=["Nº inventario","Nombre","Tipo","Marca","Modelo","Nº de serie","Estado","Ubicación","Rack","U","Asignado a",
+  "Proveedor","Fecha de compra","Nº de factura","Precio","Centro de coste","Fin de garantía","Fin de soporte","Fin de mantenimiento","Coste de renovación","Notas","Historial","Adjuntos"];
+function expCSV(){
+  const rows=DB.activos.map(a=>[a.inv,a.nombre,TYPES[a.tipo],a.marca,a.modelo,a.serie,ESTADOS[a.estado].n,a.ubicacion.sala,a.ubicacion.rack,a.ubicacion.u,a.asignado,
+    a.compra.proveedor,fdate(a.compra.fecha),a.compra.factura,num(a.compra.precio),a.compra.centroCoste,
+    fdate(a.ciclo.garantia),fdate(a.ciclo.soporte),fdate(a.ciclo.mantenimiento),num(a.ciclo.renovacion),a.notas.replace(/\r?\n/g," "),
+    a.historial.map(h=>fdate(h.fecha)+" "+h.texto.replace(/\s*\|\s*/g," / ")).join(" | "),
+    a.adjuntos.map(j=>(j.nombre?j.nombre.replace(/[:|]/g," ")+": ":"")+j.ruta).join(" | ")]);
+  const txt="﻿"+[CSV_HEAD,...rows].map(r=>r.map(csvQ).join(";")).join("\r\n");
+  deliver(new Blob([txt],{type:"text/csv;charset=utf-8"}),"inventario-"+stamp()+".csv",txt);
+}
+function expJSON(){
+  save();const j=JSON.stringify(DB,null,2);
+  deliver(new Blob([j],{type:"application/json"}),"assetscope-"+stamp()+".json",j);
+}
+function expPDF(){
+  toast("Preparando documento…");
+  setTimeout(()=>{
+    const r=repData(),cfg=DB.cfg,tipos=Object.entries(r.porTipo).sort((a,b)=>b[1].n-a[1].n);
+    const lv=l=>l==="bad"?"s-bad":l==="warn"?"s-warn":"";
+    let h=`<h1>Informe de parque${cfg.empresa?" — "+esc(cfg.empresa):""}</h1>
+    <div class="meta">Generado el ${new Date().toLocaleString("es-ES")} con AssetScope · ${r.act.length} equipos activos · ${DB.activos.length-r.act.length} de baja</div>
+    <div class="kp"><div>Equipos<b>${r.act.length}</b></div><div>Valor de compra<b>${eur(r.valor)}</b></div>
+      <div>Con ${cfg.viejo} años o más<b>${r.viejos.length}</b></div><div>Caduca en 12 meses<b>${r.ren.size} · ${eur(r.coste)}</b></div></div>
+    <div class="cols2"><div><h2>Por tipo</h2><table><tr><th>Tipo</th><th class="num">Equipos</th><th class="num">Valor</th></tr>
+      ${tipos.map(([t,v])=>`<tr><td>${TYPES[t]}</td><td class="num">${v.n}</td><td class="num">${eur(v.v)}</td></tr>`).join("")}</table></div>
+    <div><h2>Por antigüedad</h2><table><tr><th>Antigüedad</th><th class="num">Equipos</th></tr>${r.ed.map(x=>`<tr><td>${x[0]}</td><td class="num">${x[1]}</td></tr>`).join("")}</table>
+      <h2>Por estado</h2><table><tr><th>Estado</th><th class="num">Equipos</th></tr>${Object.keys(ESTADOS).filter(k=>r.porEst[k]).map(k=>`<tr><td>${ESTADOS[k].n}</td><td class="num">${r.porEst[k]}</td></tr>`).join("")}</table></div></div>
+    <h2>Vencido</h2>${r.venc.length?`<table><tr><th>Fecha</th><th>Qué venció</th><th>Equipo</th><th>Marca y modelo</th><th>Nº de serie</th><th>Ubicación</th></tr>
+      ${r.venc.map(e=>`<tr><td class="s-bad">${fdate(e.iso)}</td><td>${CICLO[e.k]}</td><td>${esc(e.a.inv+" · "+e.a.nombre)}</td><td>${esc(what(e.a))}</td><td>${esc(e.a.serie)}</td><td>${esc(where(e.a))}</td></tr>`).join("")}</table>`:"<p>Nada vencido.</p>"}
+    <h2>Qué caduca en los próximos 12 meses</h2>${r.anio.length?`<table><tr><th>Fecha</th><th>Qué vence</th><th>Equipo</th><th>Marca y modelo</th><th>Ubicación</th><th class="num">Renovación</th></tr>
+      ${(()=>{const vistos=new Set();return r.anio.map(e=>{const pr=!vistos.has(e.a.id);vistos.add(e.a.id);const v=e.a.ciclo.renovacion||e.a.compra.precio;
+        return `<tr><td class="${lv(e.lvl)}">${fdate(e.iso)}</td><td>${CICLO[e.k]}</td><td>${esc(e.a.inv+" · "+e.a.nombre)}</td><td>${esc(what(e.a))}</td><td>${esc(where(e.a))}</td><td class="num">${pr&&v?eur(v)+(e.a.ciclo.renovacion?"":" *"):""}</td></tr>`;}).join("");})()}
+      <tr><td colspan="5"><b>Total estimado</b> (* precio de compra, a falta de coste de renovación)</td><td class="num"><b>${eur(r.coste)}</b></td></tr></table>`:"<p>Nada vence en los próximos 12 meses.</p>"}
+    <h2 class="pb">Inventario completo</h2>
+    <table><tr><th>Nº inv.</th><th>Nombre</th><th>Tipo</th><th>Marca y modelo</th><th>Nº de serie</th><th>Estado</th><th>Ubicación</th><th>Asignado a</th><th>Compra</th><th>Garantía</th><th>Soporte</th></tr>
+    ${DB.activos.slice().sort((a,b)=>a.inv.localeCompare(b.inv,"es",{numeric:true})).map(a=>{const c=k=>a.ciclo[k]?`<span class="${a.estado==="baja"?"":lv(lvlOf(days(a.ciclo[k])))}">${fdate(a.ciclo[k])}</span>`:"";
+      return `<tr><td>${esc(a.inv)}</td><td>${esc(a.nombre)}</td><td>${TYPES[a.tipo]}</td><td>${esc(what(a))}</td><td>${esc(a.serie)}</td><td>${ESTADOS[a.estado].n}</td><td>${esc(where(a))}</td><td>${esc(a.asignado)}</td><td>${fdate(a.compra.fecha)}</td><td>${c("garantia")}</td><td>${c("soporte")}</td></tr>`;}).join("")}</table>`;
+    $("#print").innerHTML=h;document.body.classList.remove("labels");
+    setTimeout(()=>{window.print();toast("Elige \"Guardar como PDF\" en el diálogo");},400);
+  },40);
+}
+const expMenu=$("#expMenu"),impMenu=$("#impMenu");
+function openMenu(m,btn){[expMenu,impMenu].forEach(x=>{if(x!==m)x.classList.remove("on");});
+  if(m.classList.contains("on")){m.classList.remove("on");return;}
+  m.classList.add("on");const r=btn.getBoundingClientRect();m.style.top=(r.bottom+6)+"px";m.style.left=Math.max(8,Math.min(r.right-270,innerWidth-278))+"px";}
+$("#expBtn").onclick=ev=>{ev.stopPropagation();openMenu(expMenu,$("#expBtn"));};
+$("#impBtn").onclick=ev=>{ev.stopPropagation();openMenu(impMenu,$("#impBtn"));};
+document.addEventListener("click",()=>{expMenu.classList.remove("on");impMenu.classList.remove("on");});
+expMenu.addEventListener("click",ev=>{const b=ev.target.closest("[data-exp]");if(!b)return;expMenu.classList.remove("on");
+  ({pdf:expPDF,csv:expCSV,json:expJSON,qr:()=>labelDialog(DB.activos.filter(a=>a.estado!=="baja"))})[b.dataset.exp]();});
+
+/* ---------- importar ---------- */
+let impMode="json";
+impMenu.addEventListener("click",ev=>{const b=ev.target.closest("[data-imp]");if(!b)return;impMenu.classList.remove("on");
+  impMode=b.dataset.imp;const f=$("#file");f.accept=impMode==="csv"?".csv,.txt,text/csv":".json,application/json";f.click();});
+$("#file").onchange=ev=>{const f=ev.target.files[0];ev.target.value="";if(f)importFile(f);};
+addEventListener("dragover",ev=>{if(ev.dataTransfer&&ev.dataTransfer.types.includes("Files"))ev.preventDefault();});
+addEventListener("drop",ev=>{const f=ev.dataTransfer&&ev.dataTransfer.files&&ev.dataTransfer.files[0];if(!f)return;ev.preventDefault();
+  impMode=/\.(csv|txt)$/i.test(f.name)?"csv":"auto";importFile(f);});
+function importFile(f){
+  if(f.size>20*1024*1024){toast("Archivo demasiado grande");return;}
+  const rd=new FileReader();
+  rd.onload=()=>{
+    let txt=String(rd.result||"");
+    if(impMode==="csv"){
+      if(txt.includes("�")){const r2=new FileReader();r2.onload=()=>csvImport(f.name,String(r2.result||""));r2.readAsText(f,"windows-1252");return;}  // Excel en ANSI
+      return csvImport(f.name,txt);
+    }
+    let d;try{d=JSON.parse(txt);}catch(e){toast("No es un JSON válido");return;}
+    const rooms=rackRooms(d);
+    if(rooms&&(impMode==="rack"||impMode==="auto"))return rackImport(f.name,rooms);
+    const db=parseDB(d);
+    if(db)return jsonImport(f.name,db);
+    toast(impMode==="rack"?"No parece un JSON de RackScope":"No parece una copia de AssetScope");
+  };
+  rd.readAsText(f,"utf-8");
+}
+function jsonImport(name,db){
+  modal.innerHTML=`<h3>Importar ${esc(name)}</h3>
+  <div class="body"><div class="hint">La copia trae <b>${db.activos.length} equipos</b>. Si la cargas, <b>sustituye</b> a los ${DB.activos.length} que tienes ahora. Puedes deshacerlo con Ctrl+Z.</div></div>
+  <div class="foot"><button class="btn" id="m_cancel">Cancelar</button><button class="btn acc" id="m_ok">Cargar la copia</button></div>`;
+  veil.classList.add("on");$("#m_cancel").onclick=closeModal;
+  $("#m_ok").onclick=()=>{DB.activos=db.activos;DB.cfg=db.cfg;save();closeModal();render();toastUndo("Copia cargada: "+db.activos.length+" equipos.");};
+}
+// CSV: separador, comillas y columnas reconocidas por sus nombres habituales
+function csvRows(txt){
+  txt=txt.replace(/^﻿/,"");
+  const first=txt.split(/\r?\n/,1)[0]||"",sep=[";","\t",","].sort((a,b)=>first.split(b).length-first.split(a).length)[0];
+  const rows=[];let row=[],cur="",inq=false;
+  for(let i=0;i<txt.length;i++){
+    const c=txt[i];
+    if(inq){if(c==='"'){if(txt[i+1]==='"'){cur+='"';i++;}else inq=false;}else cur+=c;continue;}
+    if(c==='"')inq=true;else if(c===sep){row.push(cur);cur="";}
+    else if(c==="\n"||c==="\r"){if(c==="\r"&&txt[i+1]==="\n")i++;row.push(cur);cur="";if(row.some(x=>x.trim()))rows.push(row);row=[];}
+    else cur+=c;
+  }
+  row.push(cur);if(row.some(x=>x.trim()))rows.push(row);
+  return rows.map(r=>r.map(x=>x.trim().replace(/^'(?=[=+\-@])/,"")));
+}
+const norm=s=>str(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g," ").trim();
+const SYN={
+  inv:["n inventario","no inventario","num inventario","numero de inventario","inventario","inv","n inv","asset tag","etiqueta","codigo","id activo"],
+  nombre:["nombre","equipo","hostname","host","nombre equipo","name","dispositivo","device"],
+  tipo:["tipo","type","categoria","clase","category"],
+  marca:["marca","fabricante","manufacturer","vendor","brand"],
+  modelo:["modelo","model","marca y modelo"],
+  serie:["n de serie","no de serie","num serie","numero de serie","serie","serial","serial number","s n","sn","service tag","n serie"],
+  estado:["estado","status","situacion"],
+  sala:["ubicacion","sala","location","lugar","sede","oficina","site"],
+  rack:["rack","armario"],
+  u:["u","posicion","unidad"],
+  asignado:["asignado a","asignado","usuario","user","responsable","departamento","assigned to","propietario"],
+  proveedor:["proveedor","supplier","distribuidor","vendedor"],
+  fecha:["fecha de compra","fecha compra","compra","purchase date","fecha adquisicion","adquisicion","alta"],
+  factura:["n de factura","no de factura","factura","invoice","num factura"],
+  precio:["precio","coste","costo","price","cost","importe","valor"],
+  cc:["centro de coste","centro coste","cost center","cc"],
+  garantia:["fin de garantia","garantia","fin garantia","warranty","warranty end","vencimiento garantia","garantia hasta"],
+  soporte:["fin de soporte","soporte","fin soporte","end of support","eos","eol","fin de vida","support end"],
+  mantenimiento:["fin de mantenimiento","mantenimiento","contrato","fin contrato","maintenance"],
+  renovacion:["coste de renovacion","renovacion","coste renovacion"],
+  notas:["notas","nota","observaciones","comentarios","notes","comments","descripcion"],
+  historial:["historial"],
+  adjuntos:["adjuntos","attachments","documentos"]
+};
+function mapCols(head){
+  const map={},used=new Set(),h=head.map(norm);
+  // primero coincidencias exactas, luego las que empiezan igual
+  [x=>y=>x===y,x=>y=>y.length>2&&x.startsWith(y+" ")].forEach(test=>Object.keys(SYN).forEach(k=>{
+    if(k in map)return;const i=h.findIndex((x,i)=>!used.has(i)&&SYN[k].some(test(x)));if(i>=0){map[k]=i;used.add(i);}}));
+  return map;
+}
+function guessTipo(t,txt){
+  const s=norm(t);const k=Object.keys(TYPES).find(k=>norm(TYPES[k])===s||k===s);if(k)return k;
+  const x=norm((t||"")+" "+(txt||""));
+  const R=[["portatil",/portatil|laptop|notebook|thinkpad|latitude|elitebook|macbook/],["servidor",/servidor|server|proliant|poweredge|esxi/],["switch",/switch|catalyst|aruba/],
+    ["firewall",/firewall|cortafuegos|fortigate|pfsense|sophos/],["router",/router|mikrotik|enrutador/],["cabina",/nas|cabina|san|synology|qnap|storage/],
+    ["sai",/sai|ups|smart ups/],["ap",/punto de acceso|access point|\bap\b|wifi|unifi/],["impresora",/impresora|printer|multifuncion|laserjet/],
+    ["monitor",/monitor|pantalla/],["telefono",/telefono|phone|voip/],["movil",/movil|tablet|ipad|iphone|android/],["pc",/\bpc\b|sobremesa|desktop|torre|optiplex|prodesk/]];
+  const f=R.find(([,re])=>re.test(x));return f?f[0]:"otro";
+}
+function guessEstado(t){
+  const s=norm(t);if(!s)return "produccion";
+  if(/baja|retir|desech|recicl|scrap|retired/.test(s))return "baja";if(/rma|repar|garantia|servicio tecnico/.test(s))return "rma";
+  if(/almacen|stock|reserva|disponible|spare/.test(s))return "almacen";if(/prest|loan/.test(s))return "prestado";return "produccion";
+}
+const isSample=()=>DB.activos.length===15&&DB.activos.some(a=>a.serie==="ABC1234")&&DB.activos.some(a=>a.serie==="CZJ5480ABC");
+function csvImport(name,txt){
+  const rows=csvRows(txt);
+  if(rows.length<2){toast("El CSV no tiene filas");return;}
+  const map=mapCols(rows[0]);
+  if(!("nombre" in map)&&!("serie" in map)&&!("inv" in map)){toast("No encuentro la columna de nombre, nº de serie o inventario");return;}
+  const g=(r,k)=>k in map?str(r[map[k]]).trim():"";
+  const bySerie=new Map(DB.activos.filter(a=>a.serie).map(a=>[a.serie.toLowerCase(),a]));
+  const byInv=new Map(DB.activos.map(a=>[a.inv.toLowerCase(),a]));
+  const plan=[];
+  rows.slice(1).forEach(r=>{
+    const nombre=g(r,"nombre")||[g(r,"marca"),g(r,"modelo")].filter(Boolean).join(" ")||g(r,"serie");
+    if(!nombre&&!g(r,"serie"))return;
+    const hist=g(r,"historial").split("|").map(x=>x.trim()).filter(Boolean).map(x=>{const m=/^(\S+)\s+(.*)$/.exec(x),f=m&&parseFecha(m[1]);return f?{fecha:f,texto:m[2]}:{fecha:"",texto:x};});
+    const a=cleanAsset({inv:g(r,"inv"),nombre,tipo:guessTipo(g(r,"tipo"),nombre+" "+g(r,"modelo")),marca:g(r,"marca"),modelo:g(r,"modelo"),serie:g(r,"serie"),
+      estado:guessEstado(g(r,"estado")),ubicacion:{sala:g(r,"sala"),rack:g(r,"rack"),u:g(r,"u")},asignado:g(r,"asignado"),
+      compra:{proveedor:g(r,"proveedor"),fecha:parseFecha(g(r,"fecha")),factura:g(r,"factura"),precio:precio(g(r,"precio")),centroCoste:g(r,"cc")},
+      ciclo:{garantia:parseFecha(g(r,"garantia")),soporte:parseFecha(g(r,"soporte")),mantenimiento:parseFecha(g(r,"mantenimiento")),renovacion:precio(g(r,"renovacion"))},
+      historial:hist,notas:g(r,"notas"),
+      adjuntos:g(r,"adjuntos").split(" | ").map(x=>x.trim()).filter(Boolean).map(x=>{const m=/^([^:\\/]{1,120}):\s+(.+)$/.exec(x);return m?{nombre:m[1],ruta:m[2]}:{nombre:"",ruta:x};})});
+    const prev=(a.serie&&bySerie.get(a.serie.toLowerCase()))||(a.inv&&byInv.get(a.inv.toLowerCase()))||null;
+    plan.push({a,prev,hasTipo:!!g(r,"tipo"),hasEst:!!g(r,"estado")});
+  });
+  const nNew=plan.filter(p=>!p.prev).length,nUpd=plan.length-nNew;
+  const lbl={inv:"Nº inventario",nombre:"Nombre",tipo:"Tipo",marca:"Marca",modelo:"Modelo",serie:"Nº de serie",estado:"Estado",sala:"Ubicación",rack:"Rack",u:"U",asignado:"Asignado",
+    proveedor:"Proveedor",fecha:"Fecha de compra",factura:"Factura",precio:"Precio",cc:"Centro de coste",garantia:"Garantía",soporte:"Soporte",mantenimiento:"Mantenimiento",renovacion:"Renovación",notas:"Notas",historial:"Historial",adjuntos:"Adjuntos"};
+  const free=rows[0].filter((x,i)=>!Object.values(map).includes(i)&&x.trim());
+  modal.className="modal wide";
+  modal.innerHTML=`<h3>Importar ${esc(name)}</h3>
+  <div class="body">
+    <div class="hint"><b>${plan.length} filas</b>: ${nNew} equipo${nNew===1?"":"s"} nuevo${nNew===1?"":"s"} y ${nUpd} que ya existía${nUpd===1?"":"n"} (mismo nº de serie o de inventario). En los que ya existen solo se rellenan los datos que traiga el CSV; lo demás se queda como está.</div>
+    <div class="hint">Columnas reconocidas: ${Object.keys(map).map(k=>`<span class="tag">${lbl[k]}</span>`).join(" ")}${free.length?`<br>Sin usar: ${free.map(x=>`<span class="tag skip">${esc(x)}</span>`).join(" ")}`:""}</div>
+    <div class="prev"><table><tr><th></th><th>Nombre</th><th>Tipo</th><th>Marca y modelo</th><th>Serie</th><th>Ubicación</th><th>Garantía</th><th>Soporte</th></tr>
+      ${plan.slice(0,200).map(p=>`<tr><td><span class="tag ${p.prev?"upd":"new"}">${p.prev?"actualiza":"nuevo"}</span></td><td>${esc(p.a.nombre)}</td><td>${TYPES[p.a.tipo]}</td><td>${esc(what(p.a))}</td>
+        <td>${esc(p.a.serie)}</td><td>${esc(where(p.a))}</td><td>${fdate(p.a.ciclo.garantia)}</td><td>${fdate(p.a.ciclo.soporte)}</td></tr>`).join("")}</table></div>
+    ${isSample()?`<label class="chk"><input type="checkbox" id="i_clear" checked> Borrar antes los equipos de ejemplo</label>`:""}
+  </div>
+  <div class="foot"><button class="btn" id="m_cancel">Cancelar</button><button class="btn acc" id="m_ok">Importar ${plan.length}</button></div>`;
+  veil.classList.add("on");$("#m_cancel").onclick=closeModal;
+  $("#m_ok").onclick=()=>{
+    const clr=$("#i_clear");
+    if(clr&&clr.checked){DB.activos=[];plan.forEach(p=>p.prev=null);}
+    plan.forEach(({a,prev,hasTipo,hasEst})=>{
+      if(prev){
+        const fill=(o,n)=>Object.keys(n).forEach(k=>{if(n[k]&&typeof n[k]!=="object"&&k!=="id"&&k!=="inv")o[k]=n[k];});
+        ["nombre","marca","modelo","serie","asignado","notas"].forEach(k=>{if(a[k]&&a[k]!=="SIN NOMBRE")prev[k]=a[k];});
+        if(hasTipo)prev.tipo=a.tipo;if(hasEst)prev.estado=a.estado;
+        fill(prev.ubicacion,a.ubicacion);fill(prev.compra,a.compra);fill(prev.ciclo,a.ciclo);
+        a.historial.forEach(h=>{if(!prev.historial.some(x=>x.texto===h.texto&&x.fecha===h.fecha))prev.historial.push(h);});
+        a.adjuntos.forEach(j=>{if(!prev.adjuntos.some(x=>x.ruta===j.ruta))prev.adjuntos.push(j);});
+      }else{
+        if(!a.inv||DB.activos.some(x=>x.inv.toLowerCase()===a.inv.toLowerCase()))a.inv=nextInv();
+        DB.activos.push(a);
+      }
+    });
+    save();closeModal();setTab("cad");toastUndo("Importados "+plan.length+" equipos ("+nNew+" nuevos).");
+  };
+}
+// salas de RackScope en cualquiera de sus formatos
+function rackRooms(d){
+  if(d&&Array.isArray(d.rooms))return d.rooms.filter(r=>r&&r.state&&Array.isArray(r.state.racks));
+  if(d&&Array.isArray(d.racks))return [{name:"Sala",state:d}];
+  if(d&&d.state&&Array.isArray(d.state.racks))return [{name:d.name||"Sala",state:d.state}];
+  return null;
+}
+// U de cada equipo tal y como las numera RackScope (filas de 12 columnas, de arriba abajo o al reves)
+function rackUs(rk){
+  const rows=[];let cur=null,ancho=0;
+  (rk.elements||[]).forEach((e,i)=>{if(!e)return;const sp=Math.max(1,Math.min(12,+e.span||12)),u=Math.max(1,+e.u||1);
+    if(!cur||ancho+sp>12){cur={idx:[i],u};rows.push(cur);ancho=sp;}else{cur.idx.push(i);cur.u=Math.max(cur.u,u);ancho+=sp;}});
+  const total=+rk.u||42,used=rows.reduce((s,r)=>s+r.u,0),tope=Math.max(total,used),out={};let off=0;
+  rows.forEach(r=>{const lo=rk.ubot?tope-off-r.u+1:off+1,hi=rk.ubot?tope-off:off+r.u;r.idx.forEach(i=>out[i]=r.u===1?String(lo):Math.min(lo,hi)+"-"+Math.max(lo,hi));off+=r.u;});
+  return out;
+}
+function rackType(e){
+  const t=norm((e.name||"")+" "+(e.sub||""));
+  if(e.type==="switch")return "switch";if(e.type==="nas")return "cabina";
+  if(/firewall|fortigate|pfsense|sophos|cortafuegos/.test(t))return "firewall";if(/router|mikrotik/.test(t))return "router";
+  if(/\bsai\b|\bups\b/.test(t))return "sai";if(e.type==="server")return "servidor";
+  return guessTipo("",t);
+}
+function rackImport(name,rooms){
+  const items=[];
+  rooms.forEach(r=>(r.state.racks||[]).forEach(rk=>{const us=rackUs(rk);(rk.elements||[]).forEach((e,i)=>{
+    if(!e||e.type==="panel"||e.type==="hueco")return;
+    const nm=str(e.name).trim();if(!nm||/pasacables|pasahilos|organizador|bandeja|regleta|guia de cables/i.test(norm(nm)))return;
+    items.push({nombre:nm.slice(0,120),tipo:rackType(e),sala:str(r.name||"Sala").slice(0,120),rack:str(rk.name||"RACK").slice(0,60),u:us[i]||"",sub:str(e.sub).slice(0,300)});
+  });}));
+  if(!items.length){toast("Ese JSON de RackScope no tiene equipos");return;}
+  const key=(n,s,r)=>norm(n)+"|"+norm(s)+"|"+norm(r);
+  const ex=new Map();DB.activos.forEach(a=>{ex.set(key(a.nombre,a.ubicacion.sala,a.ubicacion.rack),a);if(!ex.has("n|"+norm(a.nombre)))ex.set("n|"+norm(a.nombre),a);});
+  const plan=items.map(it=>({it,prev:ex.get(key(it.nombre,it.sala,it.rack))||ex.get("n|"+norm(it.nombre))||null}));
+  const nNew=plan.filter(p=>!p.prev).length;
+  modal.className="modal wide";
+  modal.innerHTML=`<h3>Equipos de RackScope · ${esc(name)}</h3>
+  <div class="body">
+    <div class="hint"><b>${items.length} equipos</b> en ${rooms.length} sala${rooms.length===1?"":"s"}: ${nNew} nuevos. Los que ya tienes con el mismo nombre solo cambian de sala, rack y U. Los paneles de parcheo y los huecos no se traen.</div>
+    <div class="prev"><table><tr><th></th><th>Nombre</th><th>Tipo</th><th>Sala</th><th>Rack</th><th>U</th></tr>
+      ${plan.map(p=>`<tr><td><span class="tag ${p.prev?"upd":"new"}">${p.prev?"actualiza":"nuevo"}</span></td><td>${esc(p.it.nombre)}</td><td>${TYPES[p.it.tipo]}</td><td>${esc(p.it.sala)}</td><td>${esc(p.it.rack)}</td><td>${esc(p.it.u)}</td></tr>`).join("")}</table></div>
+    <div class="hint">Después abre cada ficha y añade el <b>nº de serie</b> y las fechas de garantía y soporte.</div>
+  </div>
+  <div class="foot"><button class="btn" id="m_cancel">Cancelar</button><button class="btn acc" id="m_ok">Traer ${items.length}</button></div>`;
+  veil.classList.add("on");$("#m_cancel").onclick=closeModal;
+  $("#m_ok").onclick=()=>{
+    plan.forEach(({it,prev})=>{
+      if(prev){prev.ubicacion={sala:it.sala,rack:it.rack,u:it.u};return;}
+      const a=blankAsset();Object.assign(a,{inv:nextInv(),nombre:it.nombre,tipo:it.tipo,ubicacion:{sala:it.sala,rack:it.rack,u:it.u},notas:it.sub?"RackScope: "+it.sub:""});
+      DB.activos.push(a);
+    });
+    save();closeModal();setTab("inv");toastUndo("Traídos "+items.length+" equipos de RackScope.");
+  };
+}
+
+/* ---------- tema, teclado, varios ---------- */
+function setTheme(t){
+  DB.theme=t==="light"?"light":"dark";document.documentElement.setAttribute("data-theme",DB.theme);
+  $("#theme").textContent=DB.theme==="light"?"☀️":"🌙";$("#theme").title=DB.theme==="light"?"Cambiar a tema oscuro":"Cambiar a tema claro";
+  save();
+}
+$("#theme").onclick=()=>setTheme(DB.theme==="light"?"dark":"light");
+$("#undo").onclick=undo;$("#redo").onclick=redo;
+addEventListener("keydown",ev=>{
+  const t=ev.target,typing=t&&(/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)||t.isContentEditable);
+  if((ev.ctrlKey||ev.metaKey)&&!ev.altKey){
+    const k=ev.key.toLowerCase();
+    if(k==="f"&&!veil.classList.contains("on")){ev.preventDefault();search.focus();search.select();return;}
+    if((k==="z"||k==="y")&&!typing&&!veil.classList.contains("on")){ev.preventDefault();if(k==="y"||ev.shiftKey)redo();else undo();}
+    return;
+  }
+  if(ev.key==="Escape"&&veil.classList.contains("on")&&!modal.onkeydown)closeModal();
+});
+function layout(){
+  const t=$("#top").offsetHeight,w=$("#warn");w.style.top=t+"px";
+  stage.style.top=(t+(w.classList.contains("on")?w.offsetHeight:0))+"px";
+}
+addEventListener("resize",layout);
+$("#reset").onclick=()=>{
+  modal.innerHTML=`<h3>Reiniciar</h3><div class="body"><div class="hint">Se borra el inventario de este navegador${fileHandle?" y del archivo vinculado":""}. Puedes deshacerlo con Ctrl+Z mientras no cierres la página.</div></div>
+  <div class="foot"><button class="btn" id="r_seed">Volver al ejemplo</button><button class="btn danger" id="r_empty">Empezar en blanco</button><span style="flex:1"></span><button class="btn" id="m_cancel">Cancelar</button></div>`;
+  veil.classList.add("on");$("#m_cancel").onclick=closeModal;
+  const go=s=>{DB.activos=s?seed():[];save();closeModal();render();toastUndo(s?"Datos de ejemplo cargados.":"Inventario vacío.");};
+  $("#r_seed").onclick=()=>go(true);$("#r_empty").onclick=()=>go(false);
+};
+$("#linkFile").onclick=()=>{
+  modal.innerHTML=fileHandle?`<h3>Archivo vinculado</h3>
+    <div class="body"><div class="hint">Se guarda solo en <b>${esc(fileName)}</b> cada vez que cambias algo.</div></div>
+    <div class="foot"><button class="btn" id="f_open">Abrir otro archivo…</button><button class="btn" id="f_new">Vincular archivo nuevo…</button><button class="btn acc" id="m_cancel">Cerrar</button></div>`
+  :`<h3>Guardar en un archivo</h3>
+    <div class="body"><div class="hint">Ahora mismo los datos viven <b>solo en este navegador</b>, atados a la carpeta donde está el HTML. Si cambias de equipo o de navegador, el inventario no viaja contigo.<br><br>
+    Si vinculas un archivo, la aplicación lo reescribe sola cada vez que cambias algo. Ese archivo es tuyo: lo copias, lo guardas en red y lo vuelves a abrir desde cualquier copia del programa.</div></div>
+    <div class="foot"><button class="btn" id="f_open">Abrir uno que ya tenga…</button><button class="btn" id="m_cancel">Ahora no</button><button class="btn acc" id="f_new">Elegir archivo…</button></div>`;
+  veil.classList.add("on");
+  $("#m_cancel").onclick=closeModal;
+  $("#f_new").onclick=()=>{closeModal();linkFile();};
+  $("#f_open").onclick=()=>{closeModal();openFile();};
+};
+document.addEventListener("click",ev=>{const b=ev.target.closest("#warnLink,#warnExp");if(!b)return;if(b.id==="warnLink")linkFile();else expJSON();});
+addEventListener("beforeunload",ev=>{if(!lsOK&&!fileHandle){ev.preventDefault();ev.returnValue="";}});
+// el QR en modo enlace abre la ficha: ...#inv=INV-0007
+function openFromHash(){
+  const m=/[#&]inv=([^&]+)/.exec(location.hash);if(!m)return;
+  let inv="";try{inv=decodeURIComponent(m[1]);}catch(e){return;}
+  const a=DB.activos.find(x=>x.inv.toLowerCase()===inv.toLowerCase());
+  if(!a){toast("No encuentro el equipo "+inv+" en este navegador");return;}
+  if(DB.tab!=="inv")setTab("inv");openAsset(a);
+}
+addEventListener("hashchange",openFromHash);
+
+/* ---------- demostracion guiada ---------- */
+const glow=(sel,on)=>{const n=$(sel);if(n)n.classList.toggle("glow",on);};
+const unglow=()=>$$(".glow").forEach(n=>n.classList.remove("glow"));
+let tourBack=null;
+const TOUR=[
+ {t:"<b>AssetScope</b> — qué es cada equipo y hasta cuándo te va a durar",f:()=>{closeModal();search.value="";q="";setTab("cad");}},
+ {t:"Al abrir, un <b>semáforo</b>: lo vencido, lo que vence en 90 días y lo que está al día",f:()=>glow("#kpis",true)},
+ {t:"Ordenado por fecha: <b>garantías, soporte del fabricante y contratos</b> de mantenimiento",f:()=>{unglow();glow("#g_warn",true);const g=$("#g_warn");if(g)g.scrollIntoView({block:"center"});}},
+ {t:"<b>Clic</b> y se abre la ficha: identidad, ubicación, compra, ciclo de vida, historial y adjuntos",f:()=>{unglow();const a=DB.activos.find(x=>x.nombre==="srv-app-01")||DB.activos[0];if(a)openAsset(a);}},
+ {t:"El <b>inventario</b> completo, con filtros por tipo, estado y ubicación",f:()=>{closeModal();setTab("inv");}},
+ {t:"El <b>buscador</b> encuentra por nombre, nº de serie, persona o sala",f:()=>{search.value="dell";q="dell";render();}},
+ {t:"El <b>informe de parque</b>: valor, equipos viejos y cuánto costará renovar lo que caduca",f:()=>{search.value="";q="";setTab("rep");}},
+ {t:"Sale en <b>PDF y Excel</b>, y con <b>etiquetas QR</b> para pegar en cada equipo",f:()=>{openMenu(expMenu,$("#expBtn"));}},
+ {t:"Importa tu <b>hoja de Excel</b> o los equipos de <b>RackScope</b> sin teclearlos otra vez",f:()=>{expMenu.classList.remove("on");openMenu(impMenu,$("#impBtn"));}},
+ {t:"<b>AssetScope</b> · hermana de RackScope y SubnetScope · un solo HTML, sin servidor",f:()=>{impMenu.classList.remove("on");setTab("cad");}}
+];
+let tourI=-1,tourT=null;
+function tourStep(i){tourI=i;const st=TOUR[i];if(!st)return tourStop();$("#capT").innerHTML=st.t;$("#cap").classList.add("on");try{st.f();}catch(e){}}
+function tourPlay(){
+  tourBack={tab:DB.tab};$("#tour").classList.add("on");
+  const next=()=>{if(tourI+1>=TOUR.length)return tourStop();tourStep(tourI+1);tourT=setTimeout(next,2800);};
+  tourI=-1;next();
+}
+function tourStop(){
+  clearTimeout(tourT);tourT=null;tourI=-1;$("#cap").classList.remove("on");$("#tour").classList.remove("on");
+  unglow();expMenu.classList.remove("on");impMenu.classList.remove("on");closeModal();
+  if(tourBack){search.value="";q="";setTab(tourBack.tab);tourBack=null;}
+}
+$("#tour").onclick=()=>{tourT?tourStop():tourPlay();};
+$("#capX").onclick=tourStop;
+
+/* ---------- version y novedades ---------- */
+const VERSION="1.0";
+const NEWS=[
+ {v:"1.0",d:"15 de octubre de 2026",items:[
+   "Primera versión: semáforo de caducidades con lo vencido, lo que vence en 90 días y lo que está al día.",
+   "Ficha de equipo con identidad, nº de serie, estado, ubicación, persona asignada, compra, fechas de fin, historial y adjuntos por ruta.",
+   "Inventario con filtros y orden por columnas, e informe de parque con valor, antigüedad y coste de renovación.",
+   "Exporta a PDF, Excel (CSV) y JSON, e imprime etiquetas con QR.",
+   "Importa tu hoja de Excel (reconoce las columnas solo) y los equipos de RackScope con su sala, rack y U."]}
+];
+function showNews(){
+  modal.innerHTML=`<h3>Novedades de AssetScope</h3><div class="body nv">${NEWS.map(n=>`<div><h4>v${n.v}<span>${n.d}</span></h4><ul>${n.items.map(i=>`<li>${esc(i)}</li>`).join("")}</ul></div>`).join("")}</div>
+    <div class="foot"><button class="btn acc" id="m_cancel">Cerrar</button></div>`;
+  veil.classList.add("on");$("#m_cancel").onclick=closeModal;
+}
+$("#ver").textContent=" v"+VERSION;$("#ver").onclick=showNews;
+
+DB=load();
+document.documentElement.setAttribute("data-theme",DB.theme);
+setTheme(DB.theme);
+render();
+UNDO=[];REDO=[];hData=dataKey();histUI();
+try{localStorage.setItem(KEY+".test","1");localStorage.removeItem(KEY+".test");}catch(e){lsOK=false;}
+updateSaveUI();
+restoreHandle();
+openFromHash();
+</script>
+</body>
+</html>
