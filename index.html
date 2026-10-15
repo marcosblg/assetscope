@@ -102,9 +102,9 @@ html[data-theme="light"] .btn.danger:hover,html[data-theme="light"] .btn.danger.
 .dot.none{background:var(--tx3);opacity:.6}
 .grp{margin-bottom:18px}
 .gh{display:flex;align-items:center;gap:8px;padding:4px 2px 8px;font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--tx3);font-weight:700;background:none;border:0;width:100%;text-align:left}
-.gh span{flex:1}
+.gh .t{flex:1}
 .gh:hover{color:var(--tx)}
-.ev{display:grid;grid-template-columns:14px 96px 150px minmax(0,1fr) 128px;align-items:center;gap:12px;width:100%;background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:6px;text-align:left;font-size:12.5px;color:var(--tx)}
+.ev{display:grid;grid-template-columns:14px 92px 190px minmax(0,1fr) auto;align-items:center;gap:12px;width:100%;background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:6px;text-align:left;font-size:12.5px;color:var(--tx)}
 .ev:hover{border-color:var(--acc)}
 .ev.bad{border-left-color:var(--bad)} .ev.warn{border-left-color:var(--warn)} .ev.ok{border-left-color:var(--ok)} .ev.none{border-left-color:var(--line2)}
 .ev .dt{font-family:var(--m);font-size:12px;color:var(--tx2)}
@@ -112,7 +112,7 @@ html[data-theme="light"] .btn.danger:hover,html[data-theme="light"] .btn.danger.
 .ev .kind small,.ev .nm small{display:block;font-weight:400;color:var(--tx3);font-size:11px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ev .nm{min-width:0}
 .ev .nm b{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
-.ev .rel{font-family:var(--m);font-size:11.5px;text-align:right;font-weight:700}
+.ev .rel{font-family:var(--m);font-size:11.5px;text-align:right;font-weight:700;white-space:nowrap}
 .ev.bad .rel{color:var(--bad)} .ev.warn .rel{color:var(--warn)} .ev.ok .rel{color:var(--ok)} .ev.none .rel{color:var(--tx3);font-weight:500}
 .empty{background:var(--panel);border:1px dashed var(--line2);border-radius:12px;padding:22px;font-size:13px;color:var(--tx2);line-height:1.6;text-align:center}
 
@@ -121,11 +121,12 @@ html[data-theme="light"] .btn.danger:hover,html[data-theme="light"] .btn.danger.
 .filters select{background:var(--panel);border:1px solid var(--line2);border-radius:8px;padding:7px 9px;font-size:12.5px;outline:none;color:var(--tx)}
 .filters select:focus{border-color:var(--acc)}
 .tw{background:var(--panel);border:1px solid var(--line2);border-radius:12px;overflow:auto;box-shadow:var(--sh)}
-table.inv{border-collapse:collapse;width:100%;font-size:12.5px;min-width:980px}
+table.inv{border-collapse:collapse;width:100%;font-size:12.5px;min-width:900px}
 table.inv th{position:sticky;top:0;background:var(--panel2);text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;color:var(--tx3);font-weight:700;padding:9px 10px;border-bottom:1px solid var(--line2);white-space:nowrap;cursor:pointer;user-select:none}
 table.inv th:hover{color:var(--tx)}
 table.inv th.on{color:var(--acc)}
-table.inv td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap;max-width:220px;overflow:hidden;text-overflow:ellipsis}
+table.inv td{padding:7px 10px;border-bottom:1px solid var(--line);white-space:nowrap;max-width:190px;overflow:hidden;text-overflow:ellipsis}
+table.inv td small{display:block;color:var(--tx3);font-size:10.5px;margin-top:1px}
 table.inv tr.r{cursor:pointer}
 table.inv tr.r:hover td{background:var(--panel3)}
 table.inv tr.flash td{animation:fl 1.6s ease-out}
@@ -145,7 +146,8 @@ table.inv td.dim{color:var(--tx3)}
 .card small{display:block;font-size:11.5px;color:var(--tx2);margin-top:5px;line-height:1.4}
 .card.warn .big{color:var(--warn)} .card.bad .big{color:var(--bad)}
 .cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:18px}
-.box{background:var(--panel);border:1px solid var(--line2);border-radius:14px;padding:13px 15px;box-shadow:var(--sh)}
+.box{background:var(--panel);border:1px solid var(--line2);border-radius:14px;padding:13px 15px;box-shadow:var(--sh);overflow-x:auto}
+table.rep td,table.rep th{white-space:nowrap}
 .box h3{margin:0 0 10px;font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--tx3)}
 .brow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;font-size:12px;margin-bottom:8px}
 .brow b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -231,6 +233,12 @@ html[data-theme="dark"] input[type=date]{color-scheme:dark}
 .nv h4 span{font-weight:400;color:var(--tx3);font-size:11.5px;margin-left:6px}
 .nv ul{margin:0;padding-left:18px;font-size:12.5px;line-height:1.6;color:var(--tx2)}
 
+@media (max-width:700px){
+  #top{flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
+  #top::-webkit-scrollbar{display:none}
+  #top .brand small,#stats,#savest{display:none}
+  .swrap{flex:0 0 170px}
+}
 @media (max-width:900px){
   .kpis,.cards{grid-template-columns:repeat(2,minmax(0,1fr))}
   .cols{grid-template-columns:1fr}
@@ -255,6 +263,7 @@ html[data-theme="dark"] input[type=date]{color-scheme:dark}
   #print th{background:#eee;text-align:left;border:1px solid #999;padding:4px 5px}
   #print td{border:1px solid #bbb;padding:3px 5px;vertical-align:top}
   #print td.num,#print th.num{text-align:right}
+  #print td.nw{white-space:nowrap}
   #print tr{page-break-inside:avoid}
   #print .kp{display:flex;gap:8px;margin:6px 0 4px}
   #print .kp div{flex:1;border:1.5px solid #000;border-radius:6px;padding:7px 9px;font-size:10px}
@@ -343,7 +352,7 @@ const str=x=>x==null?"":String(x);
 const has=(o,k)=>typeof k==="string"&&Object.prototype.hasOwnProperty.call(o,k);
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 const fmt=n=>Number(n||0).toLocaleString("es-ES",{maximumFractionDigits:2});
-const eur=n=>Number(n||0).toLocaleString("es-ES",{style:"currency",currency:"EUR",maximumFractionDigits:0});
+const eur=n=>{const v=Math.round(Number(n)||0);return (v<0?"-":"")+String(Math.abs(v)).replace(/\B(?=(\d{3})+(?!\d))/g,".")+" €";};
 
 /* ---------- fechas ---------- */
 const pad=n=>String(n).padStart(2,"0");
@@ -646,7 +655,7 @@ function renderCad(){
   const grp=(l,title,rows,foldable)=>{
     if(!lvlOn[l]||!rows.length)return "";
     const fold=foldable&&foldOk;
-    return `<div class="grp" id="g_${l}"><button class="gh" data-fold="${foldable?1:0}"><span class="dot ${l}"></span><span>${title} · ${rows.length}</span>${foldable?(fold?"mostrar ▸":"ocultar ▾"):""}</button>${fold?"":rows.join("")}</div>`;
+    return `<div class="grp" id="g_${l}"><button class="gh" data-fold="${foldable?1:0}"><span class="dot ${l}"></span><span class="t">${title} · ${rows.length}</span>${foldable?(fold?"mostrar ▸":"ocultar ▾"):""}</button>${fold?"":rows.join("")}</div>`;
   };
   h+=grp("bad","Vencido",ev.filter(e=>e.lvl==="bad").reverse().map(evRow),false);
   h+=grp("warn","Vence en los próximos "+DB.cfg.aviso+" días",ev.filter(e=>e.lvl==="warn").map(evRow),false);
@@ -659,8 +668,8 @@ function renderCad(){
   view.innerHTML=h;
 }
 const COLS=[
-  ["inv","Nº inv."],["nombre","Nombre"],["tipo","Tipo"],["modelo","Marca y modelo"],["serie","Nº de serie"],["estado","Estado"],
-  ["sala","Ubicación"],["asignado","Asignado a"],["fecha","Compra"],["cad","Cobertura"]];
+  ["inv","Nº inv."],["nombre","Nombre y tipo"],["modelo","Marca y modelo"],["serie","Nº de serie"],["estado","Estado"],["cad","Cobertura"],
+  ["sala","Ubicación"],["asignado","Asignado a"],["fecha","Compra"]];
 function sortVal(a,k){
   switch(k){
     case "tipo":return TYPES[a.tipo];case "modelo":return what(a);case "estado":return ESTADOS[a.estado].n;
@@ -690,12 +699,12 @@ function renderInv(){
   h+=`<div class="tw"><table class="inv"><tr>${COLS.map(([k,t])=>`<th data-sort="${k}" class="${k===sortK?"on":""}">${t}${k===sortK?(sortD>0?" ▴":" ▾"):""}</th>`).join("")}</tr>
   ${list.map(a=>{const w=peor(a),e=ESTADOS[a.estado];
     return `<tr class="r" data-open="${a.id}" data-id="${a.id}">
-      <td class="mono">${esc(a.inv)}</td><td><b>${esc(a.nombre)}</b></td><td>${esc(TYPES[a.tipo])}</td><td>${esc(what(a))}</td>
+      <td class="mono">${esc(a.inv)}</td><td><b>${esc(a.nombre)}</b><small>${esc(TYPES[a.tipo])}</small></td><td title="${esc(what(a))}">${esc(what(a))}</td>
       <td class="mono">${esc(a.serie)}</td>
       <td><span class="stt" style="color:${e.c};border-color:${e.c}88">${e.n}</span></td>
-      <td>${esc(where(a))}</td><td>${esc(a.asignado)}</td>
-      <td class="mono dim">${fdate(a.compra.fecha)}</td>
-      <td>${w?`<span class="dl" title="${CICLO[w.k]}"><span class="dot ${w.lvl}"></span>${fdate(w.iso)} · ${CICLO_C[w.k].replace("Fin de ","")}</span>`:'<span class="dim">—</span>'}</td></tr>`;}).join("")}
+      <td>${w?`<span class="dl" title="${CICLO[w.k]}: ${w.lvl==="bad"?"venció":"vence"} ${rel(days(w.iso))}"><span class="dot ${w.lvl}"></span>${fdate(w.iso)} · ${CICLO_C[w.k].replace("Fin de ","")}</span>`:'<span class="dim">—</span>'}</td>
+      <td title="${esc(where(a))}">${esc(where(a))}</td><td title="${esc(a.asignado)}">${esc(a.asignado)}</td>
+      <td class="mono dim">${fdate(a.compra.fecha)}</td></tr>`;}).join("")}
   </table></div><div class="foot-n">${list.length} de ${DB.activos.length} equipos${q?` · búsqueda «${esc(q)}»`:""}</div>`;
   view.innerHTML=h;bindInv();
 }
@@ -798,7 +807,7 @@ function openAsset(a0,isNew){
       <div class="g4">${fld("f_sala","Sala o ubicación",a.ubicacion.sala,"CPD, Despacho 3, Almacén…")}${fld("f_rack","Rack",a.ubicacion.rack,"si está rackeado")}${fld("f_u","U",a.ubicacion.u,"","mono")}${fld("f_asig","Asignado a",a.asignado,"persona o departamento")}</div>
     </fieldset>
     <fieldset class="fs"><legend>Ciclo de vida</legend>
-      <div class="g4">${fldDate("f_gar","Fin de garantía",a.ciclo.garantia)}${fldDate("f_sop","Fin de soporte del fabricante",a.ciclo.soporte)}${fldDate("f_man","Fin de mantenimiento",a.ciclo.mantenimiento)}
+      <div class="g4">${fldDate("f_gar","Fin de garantía",a.ciclo.garantia)}${fldDate("f_sop","Fin de soporte",a.ciclo.soporte)}${fldDate("f_man","Fin de mantenimiento",a.ciclo.mantenimiento)}
       ${fld("f_ren","Coste de renovación €",a.ciclo.renovacion||"","estimado","mono")}</div>
     </fieldset>
     <fieldset class="fs"><legend>Compra</legend>
@@ -863,7 +872,7 @@ function openAsset(a0,isNew){
     $("#f_dup").textContent=msg.join(" · ");
   };
   modal.oninput=()=>{dirty();live();};modal.onchange=live;live();
-  setTimeout(()=>{const n=$("#f_nombre");n.focus();if(isNew)n.select();},40);
+  setTimeout(()=>{const n=$("#f_nombre");if(!n)return;n.focus();if(isNew)n.select();},40);
   $("#m_cancel").onclick=closeModal;
   $("#m_ok").onclick=()=>{
     const v=id=>$("#"+id).value.trim();
@@ -1105,7 +1114,7 @@ function expPDF(){
     <h2 class="pb">Inventario completo</h2>
     <table><tr><th>Nº inv.</th><th>Nombre</th><th>Tipo</th><th>Marca y modelo</th><th>Nº de serie</th><th>Estado</th><th>Ubicación</th><th>Asignado a</th><th>Compra</th><th>Garantía</th><th>Soporte</th></tr>
     ${DB.activos.slice().sort((a,b)=>a.inv.localeCompare(b.inv,"es",{numeric:true})).map(a=>{const c=k=>a.ciclo[k]?`<span class="${a.estado==="baja"?"":lv(lvlOf(days(a.ciclo[k])))}">${fdate(a.ciclo[k])}</span>`:"";
-      return `<tr><td>${esc(a.inv)}</td><td>${esc(a.nombre)}</td><td>${TYPES[a.tipo]}</td><td>${esc(what(a))}</td><td>${esc(a.serie)}</td><td>${ESTADOS[a.estado].n}</td><td>${esc(where(a))}</td><td>${esc(a.asignado)}</td><td>${fdate(a.compra.fecha)}</td><td>${c("garantia")}</td><td>${c("soporte")}</td></tr>`;}).join("")}</table>`;
+      return `<tr><td class="nw">${esc(a.inv)}</td><td>${esc(a.nombre)}</td><td>${TYPES[a.tipo]}</td><td>${esc(what(a))}</td><td>${esc(a.serie)}</td><td>${ESTADOS[a.estado].n}</td><td>${esc(where(a))}</td><td>${esc(a.asignado)}</td><td>${fdate(a.compra.fecha)}</td><td>${c("garantia")}</td><td>${c("soporte")}</td></tr>`;}).join("")}</table>`;
     $("#print").innerHTML=h;document.body.classList.remove("labels");
     setTimeout(()=>{window.print();toast("Elige \"Guardar como PDF\" en el diálogo");},400);
   },40);
