@@ -273,7 +273,7 @@ html[data-theme="dark"] input[type=date]{color-scheme:dark}
   body.labels #print{display:block}
   @page labels{size:A4 portrait;margin:0}
   .sheet{page:labels;display:grid;grid-template-columns:repeat(3,70mm);grid-auto-rows:37mm;width:210mm}
-  .lab{height:37mm;padding:3mm;display:flex;gap:3mm;align-items:center;border:.2mm dashed #bbb;overflow:hidden;page-break-inside:avoid}
+  .lab{height:37mm;padding:3mm 3mm 3mm 4mm;display:flex;gap:3mm;align-items:center;overflow:hidden;page-break-inside:avoid}
   .lab svg{width:29mm;height:29mm;flex:0 0 auto}
   .lab .lt{min-width:0;font-size:8.5pt;line-height:1.25}
   .lab .lt b{display:block;font-family:var(--m);font-size:11.5pt;margin-bottom:1mm}
@@ -1005,18 +1005,18 @@ const QR=(()=>{
     return M;
   };
 })();
-function qrSVG(text){
-  const M=QR(text),n=M.length,b=4;let d="";
+function qrSVG(text,quiet){
+  const M=QR(text),n=M.length,b=quiet==null?4:quiet;let d="";   // en la etiqueta el blanco de alrededor ya hace de margen
   for(let y=0;y<n;y++)for(let x=0;x<n;x++)if(M[y][x])d+=`M${x+b},${y+b}h1v1h-1z`;
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${n+2*b} ${n+2*b}" shape-rendering="crispEdges"><rect width="100%" height="100%" fill="#fff"/><path d="${d}" fill="#000"/></svg>`;
 }
 function qrText(a){
   const c=DB.cfg;
   if(c.qr==="enlace"&&c.qrBase)return c.qrBase.replace(/#.*$/,"")+"#inv="+encodeURIComponent(a.inv);
-  return [a.inv,a.nombre,what(a),a.serie?"S/N "+a.serie:"",a.ciclo.garantia?"Garantía hasta "+fdate(a.ciclo.garantia):"",c.empresa].filter(Boolean).join("\n");
+  return [a.inv,a.nombre,what(a),a.serie?"S/N "+a.serie:""].filter(Boolean).join("\n");   // solo lo que no cambia: QR menos denso y que no se queda viejo
 }
 function labelHTML(a){
-  return `<div class="lab">${qrSVG(qrText(a))}<div class="lt"><b>${esc(a.inv)}</b><span>${esc(a.nombre)}</span><span>${esc(what(a))}</span>
+  return `<div class="lab">${qrSVG(qrText(a),2)}<div class="lt"><b>${esc(a.inv)}</b><span>${esc(a.nombre)}</span><span>${esc(what(a))}</span>
     ${a.serie?`<span>S/N ${esc(a.serie)}</span>`:""}${DB.cfg.empresa?`<span class="own">${esc(DB.cfg.empresa)}</span>`:""}</div></div>`;
 }
 function labelDialog(list){
@@ -1189,14 +1189,15 @@ const SYN={
   sala:["ubicacion","sala","location","lugar","sede","oficina","site"],
   rack:["rack","armario"],
   u:["u","posicion","unidad"],
-  asignado:["asignado a","asignado","usuario","user","responsable","departamento","assigned to","propietario"],
+  depto:["departamento","department","area","seccion","servicio"],
+  asignado:["asignado a","asignado","usuario","user","responsable","assigned to","propietario","empleado","owner"],
   proveedor:["proveedor","supplier","distribuidor","vendedor"],
   fecha:["fecha de compra","fecha compra","compra","purchase date","fecha adquisicion","adquisicion","alta"],
   factura:["n de factura","no de factura","factura","invoice","num factura"],
   precio:["precio","coste","costo","price","cost","importe","valor"],
   cc:["centro de coste","centro coste","cost center","cc"],
   garantia:["fin de garantia","garantia","fin garantia","warranty","warranty end","vencimiento garantia","garantia hasta"],
-  soporte:["fin de soporte","soporte","fin soporte","end of support","eos","eol","fin de vida","support end"],
+  soporte:["fin de soporte","soporte","fin soporte","end of support","eos","eol","fin de vida","end of life","support end"],
   mantenimiento:["fin de mantenimiento","mantenimiento","contrato","fin contrato","maintenance"],
   renovacion:["coste de renovacion","renovacion","coste renovacion"],
   notas:["notas","nota","observaciones","comentarios","notes","comments","descripcion"],
@@ -1228,8 +1229,12 @@ const isSample=()=>DB.activos.length===15&&DB.activos.some(a=>a.serie==="ABC1234
 function csvImport(name,txt){
   const rows=csvRows(txt);
   if(rows.length<2){toast("El CSV no tiene filas");return;}
-  const map=mapCols(rows[0]);
-  if(!("nombre" in map)&&!("serie" in map)&&!("inv" in map)){toast("No encuentro la columna de nombre, nº de serie o inventario");return;}
+  // la cabecera no siempre es la primera fila: muchas hojas llevan un titulo encima
+  const ok=m=>"nombre" in m||"serie" in m||"inv" in m;
+  let hi=-1,map={};
+  rows.slice(0,10).forEach((r,i)=>{const m=mapCols(r);if(ok(m)&&(hi<0||Object.keys(m).length>Object.keys(map).length)){hi=i;map=m;}});
+  if(hi<0){toast("No encuentro la columna de nombre, nº de serie o inventario");return;}
+  const head=rows[hi];rows.splice(0,hi+1,head);
   const g=(r,k)=>k in map?str(r[map[k]]).trim():"";
   const bySerie=new Map(DB.activos.filter(a=>a.serie).map(a=>[a.serie.toLowerCase(),a]));
   const byInv=new Map(DB.activos.map(a=>[a.inv.toLowerCase(),a]));
@@ -1239,7 +1244,8 @@ function csvImport(name,txt){
     if(!nombre&&!g(r,"serie"))return;
     const hist=g(r,"historial").split("|").map(x=>x.trim()).filter(Boolean).map(x=>{const m=/^(\S+)\s+(.*)$/.exec(x),f=m&&parseFecha(m[1]);return f?{fecha:f,texto:m[2]}:{fecha:"",texto:x};});
     const a=cleanAsset({inv:g(r,"inv"),nombre,tipo:guessTipo(g(r,"tipo"),nombre+" "+g(r,"modelo")),marca:g(r,"marca"),modelo:g(r,"modelo"),serie:g(r,"serie"),
-      estado:guessEstado(g(r,"estado")),ubicacion:{sala:g(r,"sala"),rack:g(r,"rack"),u:g(r,"u")},asignado:g(r,"asignado"),
+      estado:guessEstado(g(r,"estado")),ubicacion:{sala:g(r,"sala"),rack:g(r,"rack"),u:g(r,"u")},
+      asignado:g(r,"asignado")&&g(r,"depto")?g(r,"asignado")+" ("+g(r,"depto")+")":g(r,"asignado")||g(r,"depto"),
       compra:{proveedor:g(r,"proveedor"),fecha:parseFecha(g(r,"fecha")),factura:g(r,"factura"),precio:precio(g(r,"precio")),centroCoste:g(r,"cc")},
       ciclo:{garantia:parseFecha(g(r,"garantia")),soporte:parseFecha(g(r,"soporte")),mantenimiento:parseFecha(g(r,"mantenimiento")),renovacion:precio(g(r,"renovacion"))},
       historial:hist,notas:g(r,"notas"),
@@ -1248,7 +1254,7 @@ function csvImport(name,txt){
     plan.push({a,prev,hasTipo:!!g(r,"tipo"),hasEst:!!g(r,"estado")});
   });
   const nNew=plan.filter(p=>!p.prev).length,nUpd=plan.length-nNew;
-  const lbl={inv:"Nº inventario",nombre:"Nombre",tipo:"Tipo",marca:"Marca",modelo:"Modelo",serie:"Nº de serie",estado:"Estado",sala:"Ubicación",rack:"Rack",u:"U",asignado:"Asignado",
+  const lbl={inv:"Nº inventario",nombre:"Nombre",tipo:"Tipo",marca:"Marca",modelo:"Modelo",serie:"Nº de serie",estado:"Estado",sala:"Ubicación",rack:"Rack",u:"U",asignado:"Asignado",depto:"Departamento",
     proveedor:"Proveedor",fecha:"Fecha de compra",factura:"Factura",precio:"Precio",cc:"Centro de coste",garantia:"Garantía",soporte:"Soporte",mantenimiento:"Mantenimiento",renovacion:"Renovación",notas:"Notas",historial:"Historial",adjuntos:"Adjuntos"};
   const free=rows[0].filter((x,i)=>!Object.values(map).includes(i)&&x.trim());
   modal.className="modal wide";
