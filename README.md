@@ -12,6 +12,10 @@ Nació para sustituir la típica hoja de inventario: la que tiene veinte columna
 
 No hay que instalar ni descargar nada: el enlace abre la herramienta con un inventario de ejemplo. Pulsa **▶ Ver demo** para la visita guiada.
 
+![Demostración de AssetScope](docs/demo.gif)
+
+🎬 **[Ver el vídeo de demostración (30 s)](docs/demo.mp4)** · o pulsa **▶ Ver demo** dentro de la propia aplicación para recorrerla tú mismo.
+
 ## Qué hace
 
 **El semáforo de caducidades**
