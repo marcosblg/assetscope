@@ -332,6 +332,375 @@ html[data-theme="dark"] input[type=date]{color-scheme:dark}
 <div id="toast"></div>
 <div id="print"></div>
 
+<script id="i18n">
+"use strict";
+/* ---------- idioma: espanol / ingles ----------
+   La aplicacion se escribe en espanol. Si el navegador esta en otro idioma (o se elige EN),
+   cada texto que aparece en pantalla se cambia por su traduccion al pintarse: textos, avisos
+   (title), marcadores de los campos, ventanas de confirmacion y el titulo de la pagina.
+   Los datos que escribe el usuario no se tocan: solo se traduce lo que esta en el diccionario. */
+const I18N=(()=>{
+  const LK="assetscope.lang";
+  let lang="es";
+  try{const s=localStorage.getItem(LK);lang=s==="en"||s==="es"?s:((navigator.language||"es").toLowerCase().startsWith("es")?"es":"en");}
+  catch(e){lang=(navigator.language||"es").toLowerCase().startsWith("es")?"es":"en";}
+  const D=new Map(Object.entries({
+"AssetScope — inventario, garantías y fin de soporte":"AssetScope — inventory, warranties and end of support",
+"inventario y caducidades ·":"inventory and expiry dates ·",
+"Ver novedades":"What's new",
+"🚦 Caducidades":"🚦 Expiry",
+"📋 Inventario":"📋 Inventory",
+"📊 Informe":"📊 Report",
+"Buscar equipo, serie, persona…":"Search device, serial, person…",
+"Deshacer (Ctrl+Z)":"Undo (Ctrl+Z)",
+"Rehacer (Ctrl+Y)":"Redo (Ctrl+Y)",
+"Cambiar tema":"Change theme",
+"Cambiar a tema claro":"Switch to light theme",
+"Cambiar a tema oscuro":"Switch to dark theme",
+"Ajustes: días de aviso, antigüedad, empresa y etiquetas":"Settings: warning days, age, company and labels",
+"Demostración automática":"Automatic demo",
+"▶ Ver demo":"▶ Watch demo",
+"＋ Equipo":"＋ Device",
+"⭳ Exportar ▾":"⭳ Export ▾",
+"📄 Informe de parque (PDF)":"📄 Fleet report (PDF)",
+"Resumen, caducidades e inventario completo":"Summary, expiry dates and full inventory",
+"📊 Excel (CSV)":"📊 Excel (CSV)",
+"Todo el inventario, una fila por equipo":"The whole inventory, one row per device",
+"🏷 Etiquetas con QR":"🏷 QR labels",
+"Hoja A4 de 3 × 8 para imprimir":"A4 sheet of 3 × 8 to print",
+"💾 Copia de seguridad (JSON)":"💾 Backup (JSON)",
+"Para volver a importarlo aquí":"To import it back here",
+"Guardar automáticamente en un archivo tuyo":"Save automatically to a file of your own",
+"💾 Archivo":"💾 File",
+"Importar ▾":"Import ▾",
+"📊 Desde Excel (CSV)":"📊 From Excel (CSV)",
+"Tu hoja de inventario de siempre: se reconocen las columnas solas":"Your usual inventory spreadsheet: columns are recognised automatically",
+"🗄 Desde RackScope":"🗄 From RackScope",
+"Los equipos de tus racks, con su sala, rack y U":"The devices in your racks, with their room, rack and U",
+"Sustituye el inventario por el de la copia":"Replaces the inventory with the backup's",
+"Reiniciar":"Reset",
+"✕ salir":"✕ exit",
+"Guardado en el navegador":"Saved in the browser",
+"Vincula un archivo para no depender del navegador":"Link a file so you don't depend on the browser",
+"Se guarda solo en tu archivo y en el navegador":"Saves itself to your file and to the browser",
+"⚠ SIN GUARDAR":"⚠ NOT SAVED",
+"El navegador no permite guardar: vincula un archivo o exporta el JSON":"The browser can't save: link a file or export the JSON",
+"⚠ Este navegador no guarda datos de archivos locales:":"⚠ This browser doesn't keep data for local files:",
+"si cierras, pierdes el trabajo":"if you close it, you lose your work",
+"Guardar en un archivo":"Save to a file",
+"Exportar JSON":"Export JSON",
+
+"Servidor":"Server","Switch":"Switch","Router":"Router","Cortafuegos":"Firewall","Cabina / NAS":"Storage / NAS","SAI":"UPS",
+"Punto de acceso":"Access point","PC":"PC","Portátil":"Laptop","Monitor":"Monitor","Impresora":"Printer","Teléfono":"Phone",
+"Móvil / tablet":"Mobile / tablet","Otro":"Other",
+"servidores":"servers","switches":"switches","routers":"routers","cortafuegos":"firewalls","cabinas / NAS":"storage / NAS",
+"puntos de acceso":"access points","portátiles":"laptops","monitores":"monitors","impresoras":"printers","teléfonos":"phones",
+"móviles / tablets":"mobiles / tablets","otros":"others","servidor":"server","switch":"switch","router":"router","cabina / nas":"storage / NAS",
+"punto de acceso":"access point","portátil":"laptop","impresora":"printer","teléfono":"phone","móvil / tablet":"mobile / tablet","otro":"other",
+"En producción":"In production","En almacén":"In storage","Prestado":"On loan","En RMA":"In RMA","De baja":"Retired",
+"Garantía":"Warranty","Soporte del fabricante":"Manufacturer support","Contrato de mantenimiento":"Maintenance contract",
+"Fin de garantía":"End of warranty","Fin de soporte":"End of support","Fin de mantenimiento":"End of maintenance",
+"garantía":"warranty","soporte":"support","mantenimiento":"maintenance",
+"Vencido":"Expired","Vence pronto":"Expires soon","Al día":"Covered","Sin fechas":"No dates",
+
+"Qué caduca":"What expires",
+"Fin de garantía, de soporte del fabricante y de contrato de mantenimiento de los equipos que no están de baja, por fecha.":"End of warranty, manufacturer support and maintenance contract for every device that isn't retired, by date.",
+"ya sin cobertura":"no longer covered",
+"hay que renovar o decidir":"renew it or decide",
+"con cobertura de sobra":"plenty of cover left",
+"equipos sin ninguna fecha de fin":"devices with no end date at all",
+"Mostrar u ocultar":"Show or hide",
+"Todavía no hay equipos.":"No devices yet.",
+"Pulsa":"Press",
+"o tráete tu hoja de inventario con":"or bring in your inventory spreadsheet with",
+"Importar › Desde Excel":"Import › From Excel",
+"o usa":"or use",
+"Sin ninguna fecha de fin":"No end date at all",
+"añadir fechas ›":"add dates ›",
+"mostrar ▸":"show ▸","ocultar ▾":"hide ▾",
+"Nada coincide con la búsqueda.":"Nothing matches the search.",
+
+"Inventario":"Inventory",
+"Clic en una fila para abrir su ficha. Clic en un encabezado para ordenar.":"Click a row to open its record. Click a header to sort.",
+"Etiquetas con QR de los equipos que ves en la tabla":"QR labels for the devices shown in the table",
+"🏷 Etiquetas de esta lista":"🏷 Labels for this list",
+"Todos los tipos":"All types","Todos los estados":"All statuses","Todas las ubicaciones":"All locations","Quitar filtros":"Clear filters",
+"Nº inv.":"Inv. no.","Nombre y tipo":"Name and type","Marca y modelo":"Make and model","Nº de serie":"Serial no.","Estado":"Status",
+"Cobertura":"Coverage","Ubicación":"Location","Asignado a":"Assigned to","Compra":"Purchase",
+
+"Informe de parque":"Fleet report",
+"Equipos que no están de baja. El PDF lleva además el inventario completo.":"Devices that aren't retired. The PDF also includes the full inventory.",
+"📊 Excel":"📊 Excel","📄 Sacar el PDF":"📄 Get the PDF",
+"Equipos":"Devices","Valor de compra":"Purchase value","todos con precio":"all with a price",
+"Caduca en 12 meses":"Expires in 12 months","Renovarlo costaría unos":"Renewing it would cost about",
+"Por tipo":"By type","Por antigüedad":"By age","Por estado":"By status","Por ubicación":"By location","Sin datos":"No data",
+"Menos de 1 año":"Under 1 year","De 1 a 3 años":"1 to 3 years","Sin fecha de compra":"No purchase date","Sin ubicación":"No location",
+"Qué caduca en los próximos 12 meses y cuánto costaría renovarlo":"What expires in the next 12 months and what renewing it would cost",
+"Fecha":"Date","Qué vence":"What expires","Equipo":"Device","Renovación":"Renewal","ya contado":"already counted",
+"Se usa el":"It uses the","coste de renovación":"renewal cost",
+"de la ficha. Si no lo tiene, el precio de compra (marcado con *). Cada equipo cuenta una vez.":"from the record. If there isn't one, the purchase price (marked with *). Each device counts once.",
+"Nada vence en los próximos 12 meses.":"Nothing expires in the next 12 months.",
+"Antigüedad":"Age","Qué venció":"What expired","Nada vencido.":"Nothing expired.",
+"Qué caduca en los próximos 12 meses":"What expires in the next 12 months",
+"Inventario completo":"Full inventory","Valor":"Value","Nº inventario":"Inventory no.","Nombre":"Name","Tipo":"Type",
+"Garantía ":"Warranty ","Soporte":"Support","Total estimado":"Estimated total",
+"(* precio de compra, a falta de coste de renovación)":"(* purchase price, as there's no renewal cost)",
+"Generado el":"Generated on",
+
+"Nuevo equipo":"New device",
+"Identidad":"Identity","Marca":"Make","Modelo":"Model","Nº de inventario":"Inventory no.",
+"srv-app-01, pt-ana…":"srv-app-01, laptop-anna…","Dell, HP, Lenovo…":"Dell, HP, Lenovo…","Service tag / S/N":"Service tag / S/N",
+"Dónde está y quién lo tiene":"Where it is and who has it",
+"Sala o ubicación":"Room or location","CPD, Despacho 3, Almacén…":"Server room, Office 3, Storeroom…",
+"Rack":"Rack","si está rackeado":"if it's racked","U":"U","persona o departamento":"person or department",
+"Ciclo de vida":"Lifecycle","Coste de renovación €":"Renewal cost €","estimado":"estimated",
+"Proveedor":"Supplier","Fecha de compra":"Purchase date","Nº de factura":"Invoice no.","Precio €":"Price €","Centro de coste":"Cost centre",
+"Historial · averías y notas con fecha":"History · faults and dated notes",
+"Qué ha pasado…":"What happened…","Añadir":"Add","Sin anotaciones.":"No entries.","Quitar":"Remove",
+"Adjuntos · ruta o enlace, nunca el archivo":"Attachments · path or link, never the file itself",
+"Factura, contrato…":"Invoice, contract…",
+"Pega la ruta de la factura o del contrato en la carpeta de red.":"Paste the path to the invoice or contract in the network folder.",
+"Copiar la ruta":"Copy the path","Adjunto":"Attachment","Ruta copiada":"Path copied","No se pudo copiar":"Couldn't copy",
+"Notas":"Notes","Eliminar":"Delete","Duplicar":"Duplicate","🏷 Etiqueta":"🏷 Label","Cancelar":"Cancel","Crear":"Create","Guardar":"Save",
+"¿Seguro? Eliminar":"Sure? Delete",
+"Si solo ya no se usa, mejor ponlo «De baja»: así queda en el historial":"If it's just no longer in use, set it to «Retired» instead: that way it stays in the history",
+"Ponle un nombre al equipo":"Give the device a name","Ese nº de inventario ya existe":"That inventory number already exists",
+"Guardado":"Saved","fecha futura":"future date","SIN NOMBRE":"NO NAME",
+
+"Ajustes":"Settings","Avisar con cuántos días":"Warn how many days ahead","Lo que vence antes sale en naranja.":"Anything expiring sooner shows in orange.",
+"Equipo viejo a partir de (años)":"Device counts as old from (years)","Para el informe de parque.":"For the fleet report.",
+"Empresa (sale en las etiquetas)":"Company (shown on labels)","Propiedad de…":"Property of…","Ajustes guardados":"Settings saved",
+
+"Qué lleva el QR":"What the QR holds",
+"Los datos del equipo — se leen con cualquier móvil, sin conexión":"The device details — readable by any phone, offline",
+"Un enlace que abre su ficha en AssetScope":"A link that opens its record in AssetScope",
+"Dirección donde abres AssetScope":"Address where you open AssetScope",
+"El QR abre esa dirección con":"The QR opens that address with",
+"al final y AssetScope salta a la ficha. Los datos están en el navegador de quien lo abre, así que úsalo con un archivo vinculado en una carpeta compartida.":"at the end and AssetScope jumps to the record. The data lives in the browser of whoever opens it, so use it with a linked file in a shared folder.",
+"Empresa (pie de la etiqueta)":"Company (label footer)",
+"Hoja A4 de 3 × 8 etiquetas de 70 × 37 mm (Apli 1274, Avery L7160 y similares). En el diálogo de impresión deja la escala al":"A4 sheet of 3 × 8 labels of 70 × 37 mm (Avery L7160, Apli 1274 and similar). In the print dialog, keep the scale at",
+"🖨 Imprimir":"🖨 Print",
+"Falta la dirección (debe empezar por https://)":"The address is missing (it must start with https://)",
+"Escribe la dirección donde abres AssetScope":"Type the address where you open AssetScope",
+"No hay equipos para etiquetar":"There are no devices to label",
+"Texto demasiado largo para el QR":"Text too long for the QR",
+
+"Debería haberse descargado ya. Si no aparece nada (algunos navegadores bloquean las descargas cuando el HTML se abre desde una carpeta local), usa los botones de abajo.":"It should have downloaded already. If nothing shows up (some browsers block downloads when the HTML is opened from a local folder), use the buttons below.",
+"Copiar todo":"Copy all","Abrir en pestaña nueva":"Open in a new tab","Descargar otra vez":"Download again","Cerrar":"Close",
+"Copiado al portapapeles":"Copied to clipboard","Selecciona el texto y copia con Ctrl+C":"Select the text and copy with Ctrl+C",
+"El navegador ha bloqueado la ventana nueva":"The browser blocked the new window",
+"Preparando documento…":"Preparing document…",
+"Elige \"Guardar como PDF\" en el diálogo":"Choose \"Save as PDF\" in the dialog",
+
+"Archivo demasiado grande":"File too large","No es un JSON válido":"Not a valid JSON file",
+"No parece un JSON de RackScope":"This doesn't look like a RackScope JSON","No parece una copia de AssetScope":"This doesn't look like an AssetScope backup",
+"El CSV no tiene filas":"The CSV has no rows","No encuentro la columna de nombre, nº de serie o inventario":"Can't find a name, serial number or inventory column",
+"Columnas reconocidas:":"Recognised columns:","Sin usar:":"Unused:","actualiza":"updates","nuevo":"new",
+"Borrar antes los equipos de ejemplo":"Delete the sample devices first",
+"Garantía hasta":"Warranty until",
+"Ese JSON de RackScope no tiene equipos":"That RackScope JSON has no devices",
+"Sala":"Room","nº de serie":"serial number","Después abre cada ficha y añade el":"Then open each record and add the",
+"y las fechas de garantía y soporte.":"and the warranty and support dates.",
+"Cargar la copia":"Load the backup",
+
+"Archivo vinculado":"Linked file","Se guarda solo en":"It saves itself to","cada vez que cambias algo.":"every time you change something.",
+"Abrir otro archivo…":"Open another file…","Vincular archivo nuevo…":"Link a new file…",
+"Ahora mismo los datos viven":"Right now the data lives","solo en este navegador":"only in this browser",
+", atados a la carpeta donde está el HTML. Si cambias de equipo o de navegador, el inventario no viaja contigo.":", tied to the folder the HTML is in. If you change computer or browser, the inventory doesn't travel with you.",
+"Si vinculas un archivo, la aplicación lo reescribe sola cada vez que cambias algo. Ese archivo es tuyo: lo copias, lo guardas en red y lo vuelves a abrir desde cualquier copia del programa.":"If you link a file, the app rewrites it every time you change something. The file is yours: copy it, keep it on the network and open it again from any copy of the program.",
+"Abrir uno que ya tenga…":"Open one I already have…","Ahora no":"Not now","Elegir archivo…":"Choose file…",
+"Tu navegador no permite vincular archivo: usa Exportar › JSON":"Your browser can't link a file: use Export › JSON",
+"Usa Importar para cargar el JSON":"Use Import to load the JSON","No se pudo abrir el archivo":"Couldn't open the file",
+"No se pudo escribir en el archivo vinculado":"Couldn't write to the linked file","Inventario de AssetScope":"AssetScope inventory",
+"tu archivo":"your file",
+"Se borra el inventario de este navegador":"This clears the inventory in this browser","y del archivo vinculado":"and in the linked file",
+". Puedes deshacerlo con Ctrl+Z mientras no cierres la página.":". You can undo it with Ctrl+Z as long as you don't close the page.",
+"Se borra el inventario de este navegador. Puedes deshacerlo con Ctrl+Z mientras no cierres la página.":"This clears the inventory in this browser. You can undo it with Ctrl+Z as long as you don't close the page.",
+"https://intranet.tuempresa.es/assetscope/":"https://intranet.yourcompany.com/assetscope/",
+"\\\\servidor\\carpeta\\archivo.pdf o https://…":"\\\\server\\folder\\file.pdf or https://…",
+"Volver al ejemplo":"Back to the sample","Empezar en blanco":"Start blank",
+"Datos de ejemplo cargados.":"Sample data loaded.","Inventario vacío.":"Inventory emptied.",
+"Deshecho":"Undone","Rehecho":"Redone","No hay nada que deshacer":"Nothing to undo","No hay nada que rehacer":"Nothing to redo","Deshacer":"Undo",
+
+"Novedades de AssetScope":"What's new in AssetScope",
+"15 de octubre de 2026":"October 15, 2026",
+"Primera versión: semáforo de caducidades con lo vencido, lo que vence en 90 días y lo que está al día.":"First release: expiry traffic light showing what has expired, what expires within 90 days and what is covered.",
+"Ficha de equipo con identidad, nº de serie, estado, ubicación, persona asignada, compra, fechas de fin, historial y adjuntos por ruta.":"Device record with identity, serial number, status, location, assignee, purchase, end dates, history and attachments by path.",
+"Inventario con filtros y orden por columnas, e informe de parque con valor, antigüedad y coste de renovación.":"Inventory with filters and column sorting, and a fleet report with value, age and renewal cost.",
+"Exporta a PDF, Excel (CSV) y JSON, e imprime etiquetas con QR.":"Exports to PDF, Excel (CSV) and JSON, and prints QR labels.",
+"Importa tu hoja de Excel (reconoce las columnas solo) y los equipos de RackScope con su sala, rack y U.":"Imports your Excel spreadsheet (it recognises the columns itself) and RackScope devices with their room, rack and U.",
+
+"— qué es cada equipo y hasta cuándo te va a durar":"— what each device is and how long it will last you",
+"Al abrir, un":"When it opens, a","semáforo":"traffic light",
+": lo vencido, lo que vence en 90 días y lo que está al día":": what has expired, what expires within 90 days and what is covered",
+"Ordenado por fecha:":"Sorted by date:","garantías, soporte del fabricante y contratos":"warranties, manufacturer support and contracts",
+"de mantenimiento":"for maintenance",
+"Clic":"Click","y se abre la ficha: identidad, ubicación, compra, ciclo de vida, historial y adjuntos":"and the record opens: identity, location, purchase, lifecycle, history and attachments",
+"El":"The","inventario":"inventory","completo, con filtros por tipo, estado y ubicación":"in full, with filters by type, status and location",
+"buscador":"search","encuentra por nombre, nº de serie, persona o sala":"finds by name, serial number, person or room",
+"informe de parque":"fleet report",": valor, equipos viejos y cuánto costará renovar lo que caduca":": value, old devices and what renewing whatever expires will cost",
+"Sale en":"It comes out as","PDF y Excel":"PDF and Excel",", y con":", and with","etiquetas QR":"QR labels","para pegar en cada equipo":"to stick on each device",
+"Importa tu":"Import your","hoja de Excel":"Excel spreadsheet","o los equipos de":"or the devices from","sin teclearlos otra vez":"without typing them again",
+"· hermana de RackScope y SubnetScope · un solo HTML, sin servidor":"· sister of RackScope and SubnetScope · a single HTML file, no server",
+
+"CPD":"Server room","Sistemas":"IT","Almacén IT":"IT storeroom","Recepción":"Reception","Taller":"Workshop","Producción":"Production",
+"Oficina · planta 1":"Office · floor 1","Planta 1 · pasillo":"Floor 1 · corridor","Planta 1 · armario":"Floor 1 · cabinet",
+"Sala de reuniones":"Meeting room","Servicio técnico Dell":"Dell repair centre",
+"Ana López (Contabilidad)":"Anna Lopez (Accounts)","Javier Ruiz (Comercial)":"James Ross (Sales)","Comercial · feria de Valencia":"Sales · Valencia trade fair",
+"Factura":"Invoice",
+"Sustituida la fuente de alimentación 2":"Power supply 2 replaced","Ampliada la RAM a 256 GB":"RAM upgraded to 256 GB",
+"Aplicaciones internas y ERP":"Internal apps and ERP","SQL Server de producción":"Production SQL Server",
+"Licencia FortiCare + UTP: renovación anual":"FortiCare + UTP licence: yearly renewal",
+"Disco 3 sustituido (aviso SMART)":"Disk 3 replaced (SMART warning)","Copias de seguridad y carpetas compartidas":"Backups and shared folders",
+"Mantenimiento anual con cambio de baterías":"Yearly maintenance with battery replacement",
+"En renting: el mantenimiento incluye el tóner":"Leased: maintenance includes toner",
+"Pantalla con líneas: abierto caso con Dell, recogida a domicilio":"Screen shows lines: case opened with Dell, collection booked",
+"Preparado para la próxima incorporación":"Ready for the next new starter",
+"Sigue con Windows 10: sin parches desde el fin de soporte":"Still on Windows 10: no patches since end of support",
+"Garantía de por vida limitada":"Limited lifetime warranty",
+"Prestado a Comercial hasta el lunes":"Lent to Sales until Monday",
+"Dado de baja: discos borrados y pendiente de reciclaje":"Retired: disks wiped, awaiting recycling",
+"Renting OfiPrint":"OfiPrint leasing"
+}));
+  const P=[
+ // tiempo relativo: "hace 3 meses", "en 20 días", "venció hace…", "vence en…", "vence hoy"
+ [/^(venció |vence )?(hace|en) (\d+(?:,\d+)?) (día|días|mes|meses|año|años)$/,(m,v,h,n,u)=>{
+   const U={"día":"day","días":"days","mes":"month","meses":"months","año":"year","años":"years"}[u],num=n.replace(",",".");
+   const t=h==="hace"?num+" "+U+" ago":"in "+num+" "+U;
+   return v==="venció "?"expired "+t:v==="vence "?"expires "+t:t;}],
+ [/^(venció|vence) hoy$/,(m,v)=>v==="venció"?"expired today":"expires today"],
+ [/^hoy$/,"today"],
+ [/^(\d+(?:,\d+)?) (día|días|mes|meses|año|años)$/,(m,n,u)=>n.replace(",",".")+" "+{"día":"day","días":"days","mes":"month","meses":"months","año":"year","años":"years"}[u]],
+ [/^(Garantía|Soporte del fabricante|Contrato de mantenimiento): (venció|vence) (.+)$/,(m,k,v,r)=>T(k)+": "+T(v+" "+r)],
+ // contadores
+ [/^(\d+) equipos? · (\d+) de baja$/,(m,a,b)=>a+(a==="1"?" device":" devices")+" · "+b+" retired"],
+ [/^(\d+) equipos?$/,(m,a)=>a+(a==="1"?" device":" devices")],
+ [/^(\d+) de (\d+) equipos$/,"$1 of $2 devices"],
+ [/^búsqueda «(.*)»$/,"search «$1»"],
+ [/^· búsqueda «(.*)»$/,"· search «$1»"],
+ [/^Filtrado por «(.*)»$/,"Filtered by «$1»"],
+ [/^· Filtrado por «(.*)»$/,"· Filtered by «$1»"],
+ [/^Vence en (\d+) días$/,"Expires within $1 days"],
+ [/^Vence en los próximos (\d+) días · (\d+)$/,"Expiring in the next $1 days · $2"],
+ [/^(Vencido|Al día|Sin ninguna fecha de fin) · (\d+)$/,(m,a,n)=>T(a)+" · "+n],
+ [/^(\d+) equipos? sin precio apuntado$/,(m,n)=>n+(n==="1"?" device":" devices")+" with no price"],
+ [/^(\d+) % del parque$/,"$1 % of the fleet"],
+ [/^(.+) en origen$/,"$1 originally"],
+ [/^Con (\d+) años o más$/,"$1 years or older"],
+ [/^Equipos con (\d+) años o más$/,"Devices $1 years or older"],
+ [/^(\d+) años o más$/,"$1 years or older"],
+ [/^De (\d+) a (\d+) años$/,"$1 to $2 years"],
+ [/^Total estimado \((\d+) equipos?\)$/,(m,n)=>"Estimated total ("+n+(n==="1"?" device)":" devices)")],
+ [/^(\d+) equipos activos$/,"$1 active devices"],
+ [/^(\d+) de baja$/,"$1 retired"],
+ [/^Generado el (.+?) con AssetScope$/,"Generated on $1 with AssetScope"],
+ [/^Informe de parque — (.+)$/,"Fleet report — $1"],
+ // ficha
+ [/^Estado: (.+) → (.+)$/,(m,a,b)=>"Status: "+T(a)+" → "+T(b)],
+ [/^Ese número de serie ya lo tiene (.+) \((.+)\)$/,"$1 ($2) already has that serial number"],
+ [/^El nº de inventario (.+) ya es de (.+)$/,"Inventory number $1 already belongs to $2"],
+ [/^(.+) \(copia\)$/,"$1 (copy)"],
+ // avisos
+ [/^«(.+)» creado$/,"«$1» created"],
+ [/^«(.+)» eliminado\.$/,"«$1» deleted."],
+ [/^Cargado desde (.+)$/,"Loaded from $1"],
+ [/^Guardado automático en (.+)$/,"Auto-saving to $1"],
+ [/^Pulsa 💾 Archivo para reconectar (.+)$/,"Press 💾 File to reconnect $1"],
+ [/^No encuentro el equipo (.+) en este navegador$/,"Can't find device $1 in this browser"],
+ [/^Importados (\d+) equipos \((\d+) nuevos?\)\.$/,"Imported $1 devices ($2 new)."],
+ [/^Traídos (\d+) equipos de RackScope\.$/,"Brought in $1 devices from RackScope."],
+ [/^Copia cargada: (\d+) equipos\.$/,"Backup loaded: $1 devices."],
+ // etiquetas, importar
+ [/^Etiquetas con QR · (\d+) equipos?$/,(m,n)=>"QR labels · "+n+(n==="1"?" device":" devices")],
+ [/^Importar (\d+)$/,"Import $1"],
+ [/^Traer (\d+)$/,"Bring in $1"],
+ [/^Importar (.+\.\w+)$/,"Import $1"],
+ [/^Equipos de RackScope · (.+)$/,"RackScope devices · $1"],
+ [/^(\d+) filas$/,"$1 rows"],
+ [/^: (\d+) equipos? nuevos? y (\d+) que ya existían? \(mismo nº de serie o de inventario\)\. En los que ya existen solo se rellenan los datos que traiga el CSV; lo demás se queda como está\.$/,
+   (m,a,b)=>": "+a+" new device"+(a==="1"?"":"s")+" and "+b+" already there (same serial or inventory number). Existing ones only get the data the CSV brings; everything else stays as it is."],
+ [/^en (\d+) salas?: (\d+) nuevos?\. Los que ya tienes con el mismo nombre solo cambian de sala, rack y U\. Los paneles de parcheo y los huecos no se traen\.$/,
+   (m,a,b)=>" in "+a+" room"+(a==="1"?"":"s")+": "+b+" new. Devices you already have with the same name only change room, rack and U. Patch panels and gaps are left out."],
+ [/^La copia trae$/,"The backup has"],
+ [/^\. Si la cargas,$/,". If you load it, it"],
+ [/^sustituye$/,"replaces"],
+ [/^a los (\d+) que tienes ahora\. Puedes deshacerlo con Ctrl\+Z\.$/,"the $1 you have now. You can undo it with Ctrl+Z."],
+ // numero + palabra ("3 portátiles", "2 servidores")
+ [/^(\d+(?:[.,]\d+)?) (\D.*)$/,(m,n,w)=>{const t=T(w);return t===w?m:n+" "+t;}]
+];
+  const SKIP=new Set(["SCRIPT","STYLE","TEXTAREA","INPUT","CODE"]);
+  function core(s){
+    let r=D.get(s);if(r!=null)return r;
+    for(const [re,f] of P){const m=re.exec(s);if(m){const x=typeof f==="function"?f(...m):s.replace(re,f);if(x!==s)return x;}}
+    // frases hechas de piezas: "Servidor · En producción", "CPD › RACK A › U12"
+    for(const sep of [" · "," › "," / "]){
+      if(!s.includes(sep))continue;
+      let any=false;const parts=s.split(sep).map(p=>{const t=p.trim()?core(p.trim()):null;if(t!=null){any=true;return t;}return p;});
+      if(any)return parts.join(sep);
+    }
+    return null;
+  }
+  function tr(s){
+    if(lang==="es"||s==null)return s;
+    s=String(s);const m=/^(\s*)([\s\S]*?)(\s*)$/.exec(s);
+    if(!m[2]||!/[A-Za-zÁÉÍÓÚáéíóúÑñ¿¡]/.test(m[2]))return s;
+    const r=core(m[2]);return r==null?s:m[1]+r+m[3];
+  }
+  const ATTR=["title","placeholder","aria-label"];
+  function doEl(el){
+    if(el.closest&&el.closest("[data-notr]"))return;
+    ATTR.forEach(a=>{const v=el.getAttribute&&el.getAttribute(a);if(v){const t=tr(v);if(t!==v)el.setAttribute(a,t);}});
+    if(el.tagName==="INPUT"&&(el.type==="button"||el.type==="submit")&&el.value){const t=tr(el.value);if(t!==el.value)el.value=t;}
+  }
+  function doText(n){
+    const p=n.parentNode;if(!p||SKIP.has(p.nodeName)||(p.closest&&p.closest("[data-notr]")))return;
+    const v=n.nodeValue,t=tr(v);if(t!==v)n.nodeValue=t;
+  }
+  function walk(root){
+    if(lang==="es"||!root)return;
+    if(root.nodeType===3){doText(root);return;}
+    if(root.nodeType!==1&&root.nodeType!==9&&root.nodeType!==11)return;
+    if(root.nodeType===1){if(root.nodeName==="SCRIPT"||root.nodeName==="STYLE")return;doEl(root);}
+    const w=document.createTreeWalker(root,5,null);let n;   // 5 = elementos y textos
+    while((n=w.nextNode())){if(n.nodeType===3)doText(n);else doEl(n);}   // los campos tambien: su placeholder
+  }
+  let mo=null;
+  function start(){
+    if(lang==="es"||mo)return;
+    document.documentElement.lang="en";
+    walk(document.body);document.title=tr(document.title);
+    mo=new MutationObserver(list=>{for(const r of list){
+      if(r.type==="childList")r.addedNodes.forEach(walk);
+      else if(r.type==="characterData")doText(r.target);
+      else if(r.type==="attributes")doEl(r.target);}});
+    mo.observe(document.documentElement,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:ATTR});
+  }
+  // ventanas del navegador y textos que no pasan por la pagina
+  const _c=window.confirm.bind(window),_a=window.alert.bind(window),_p=window.prompt.bind(window);
+  window.confirm=m=>_c(trLines(m));window.alert=m=>_a(trLines(m));window.prompt=(m,d)=>_p(trLines(m),d);
+  function trLines(m){return String(m==null?"":m).split("\n").map(tr).join("\n");}
+  // datos de ejemplo: en ingles para quien entra en ingles (solo los textos que estan en el diccionario)
+  function data(o){
+    if(lang==="es")return o;
+    if(typeof o==="string")return tr(o);
+    if(Array.isArray(o))return o.map(data);
+    if(o&&typeof o==="object"){Object.keys(o).forEach(k=>{if(!/^(id|type|st|tipo|estado|vlan|kind|mode|color)$/.test(k))o[k]=data(o[k]);});}
+    return o;
+  }
+  function setLang(l){try{localStorage.setItem(LK,l);}catch(e){}location.reload();}
+  // boton ES / EN
+  function button(where){
+    const b=document.createElement("button");b.className="btn sm";b.id="langBtn";b.setAttribute("data-notr","");
+    b.textContent=lang==="es"?"EN":"ES";b.title=lang==="es"?"English":"Español";
+    b.onclick=()=>setLang(lang==="es"?"en":"es");
+    if(where)where.parentNode.insertBefore(b,where);
+    return b;
+  }
+  return {get lang(){return lang;},tr,start,data,setLang,button};
+})();
+const T=I18N.tr;
+I18N.start();
+</script>
 <script>
 "use strict";
 const KEY="assetscope.v1";
@@ -451,7 +820,7 @@ function seed(){
       historial:[{fecha:rd(-90),texto:"Dado de baja: discos borrados y pendiente de reciclaje"}]})
   ];
   L.forEach((a,i)=>a.inv="INV-"+String(i+1).padStart(4,"0"));
-  return L;
+  return I18N.data(L);
 }
 function freshDB(withSeed){
   const a=withSeed===false?[]:seed();
@@ -596,7 +965,7 @@ const where=a=>[a.ubicacion.sala,a.ubicacion.rack,a.ubicacion.u?"U"+a.ubicacion.
 const what=a=>[a.marca,a.modelo].filter(Boolean).join(" ");
 function hay(a){
   if(!q)return true;
-  const t=[a.inv,a.nombre,TYPES[a.tipo],a.marca,a.modelo,a.serie,ESTADOS[a.estado].n,a.asignado,where(a),a.compra.proveedor,a.compra.factura,a.compra.centroCoste,a.notas]
+  const t=[a.inv,a.nombre,TYPES[a.tipo],T(TYPES[a.tipo]),a.marca,a.modelo,a.serie,ESTADOS[a.estado].n,T(ESTADOS[a.estado].n),a.asignado,where(a),a.compra.proveedor,a.compra.factura,a.compra.centroCoste,a.notas]
     .join(" ").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
   return q.split(/\s+/).every(w=>t.includes(w));
 }
@@ -1080,12 +1449,12 @@ const num=n=>n?String(n).replace(".",","):"";
 const CSV_HEAD=["Nº inventario","Nombre","Tipo","Marca","Modelo","Nº de serie","Estado","Ubicación","Rack","U","Asignado a",
   "Proveedor","Fecha de compra","Nº de factura","Precio","Centro de coste","Fin de garantía","Fin de soporte","Fin de mantenimiento","Coste de renovación","Notas","Historial","Adjuntos"];
 function expCSV(){
-  const rows=DB.activos.map(a=>[a.inv,a.nombre,TYPES[a.tipo],a.marca,a.modelo,a.serie,ESTADOS[a.estado].n,a.ubicacion.sala,a.ubicacion.rack,a.ubicacion.u,a.asignado,
+  const rows=DB.activos.map(a=>[a.inv,a.nombre,T(TYPES[a.tipo]),a.marca,a.modelo,a.serie,T(ESTADOS[a.estado].n),a.ubicacion.sala,a.ubicacion.rack,a.ubicacion.u,a.asignado,
     a.compra.proveedor,fdate(a.compra.fecha),a.compra.factura,num(a.compra.precio),a.compra.centroCoste,
     fdate(a.ciclo.garantia),fdate(a.ciclo.soporte),fdate(a.ciclo.mantenimiento),num(a.ciclo.renovacion),a.notas.replace(/\r?\n/g," "),
     a.historial.map(h=>fdate(h.fecha)+" "+h.texto.replace(/\s*\|\s*/g," / ")).join(" | "),
     a.adjuntos.map(j=>(j.nombre?j.nombre.replace(/[:|]/g," ")+": ":"")+j.ruta).join(" | ")]);
-  const txt="﻿"+[CSV_HEAD,...rows].map(r=>r.map(csvQ).join(";")).join("\r\n");
+  const txt="﻿"+[CSV_HEAD.map(T),...rows].map(r=>r.map(csvQ).join(";")).join("\r\n");
   deliver(new Blob([txt],{type:"text/csv;charset=utf-8"}),"inventario-"+stamp()+".csv",txt);
 }
 function expJSON(){
@@ -1179,12 +1548,12 @@ function csvRows(txt){
 }
 const norm=s=>str(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g," ").trim();
 const SYN={
-  inv:["n inventario","no inventario","num inventario","numero de inventario","inventario","inv","n inv","asset tag","etiqueta","codigo","id activo"],
+  inv:["n inventario","no inventario","num inventario","numero de inventario","inventario","inv","n inv","asset tag","etiqueta","codigo","id activo","inventory no","inventory number","inventory"],
   nombre:["nombre","equipo","hostname","host","nombre equipo","name","dispositivo","device"],
   tipo:["tipo","type","categoria","clase","category"],
-  marca:["marca","fabricante","manufacturer","vendor","brand"],
+  marca:["marca","fabricante","manufacturer","vendor","brand","make"],
   modelo:["modelo","model","marca y modelo"],
-  serie:["n de serie","no de serie","num serie","numero de serie","serie","serial","serial number","s n","sn","service tag","n serie"],
+  serie:["n de serie","no de serie","num serie","numero de serie","serie","serial","serial number","s n","sn","service tag","n serie","serial no"],
   estado:["estado","status","situacion"],
   sala:["ubicacion","sala","location","lugar","sede","oficina","site"],
   rack:["rack","armario"],
@@ -1195,13 +1564,13 @@ const SYN={
   fecha:["fecha de compra","fecha compra","compra","purchase date","fecha adquisicion","adquisicion","alta"],
   factura:["n de factura","no de factura","factura","invoice","num factura"],
   precio:["precio","coste","costo","price","cost","importe","valor"],
-  cc:["centro de coste","centro coste","cost center","cc"],
-  garantia:["fin de garantia","garantia","fin garantia","warranty","warranty end","vencimiento garantia","garantia hasta"],
+  cc:["centro de coste","centro coste","cost center","cost centre","cc"],
+  garantia:["fin de garantia","garantia","fin garantia","warranty","warranty end","vencimiento garantia","garantia hasta","end of warranty"],
   soporte:["fin de soporte","soporte","fin soporte","end of support","eos","eol","fin de vida","end of life","support end"],
-  mantenimiento:["fin de mantenimiento","mantenimiento","contrato","fin contrato","maintenance"],
-  renovacion:["coste de renovacion","renovacion","coste renovacion"],
+  mantenimiento:["fin de mantenimiento","mantenimiento","contrato","fin contrato","maintenance","end of maintenance"],
+  renovacion:["coste de renovacion","renovacion","coste renovacion","renewal cost"],
   notas:["notas","nota","observaciones","comentarios","notes","comments","descripcion"],
-  historial:["historial"],
+  historial:["historial","history"],
   adjuntos:["adjuntos","attachments","documentos"]
 };
 function mapCols(head){
@@ -1223,7 +1592,7 @@ function guessTipo(t,txt){
 function guessEstado(t){
   const s=norm(t);if(!s)return "produccion";
   if(/baja|retir|desech|recicl|scrap|retired/.test(s))return "baja";if(/rma|repar|garantia|servicio tecnico/.test(s))return "rma";
-  if(/almacen|stock|reserva|disponible|spare/.test(s))return "almacen";if(/prest|loan/.test(s))return "prestado";return "produccion";
+  if(/almacen|stock|storage|reserva|disponible|spare/.test(s))return "almacen";if(/prest|loan/.test(s))return "prestado";return "produccion";
 }
 const isSample=()=>DB.activos.length===15&&DB.activos.some(a=>a.serie==="ABC1234")&&DB.activos.some(a=>a.serie==="CZJ5480ABC");
 function csvImport(name,txt){
@@ -1446,6 +1815,7 @@ function showNews(){
 }
 $("#ver").textContent=" v"+VERSION;$("#ver").onclick=showNews;
 
+I18N.button($("#theme"));
 DB=load();
 document.documentElement.setAttribute("data-theme",DB.theme);
 setTheme(DB.theme);
