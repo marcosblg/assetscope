@@ -10,6 +10,8 @@ Nació para sustituir la típica hoja de inventario: la que tiene veinte columna
 
 ### 👉 [Pruébalo ahora en el navegador](https://marcosblg.github.io/assetscope/)
 
+🌐 **En español y en inglés**: sale en el idioma de tu navegador y se cambia con el botón **EN / ES**.
+
 No hay que instalar ni descargar nada: el enlace abre la herramienta con un inventario de ejemplo. Pulsa **▶ Ver demo** para la visita guiada.
 
 ![Demostración de AssetScope](docs/demo.gif)

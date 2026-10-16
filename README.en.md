@@ -10,13 +10,13 @@ It was built to replace the usual inventory spreadsheet: the one with twenty col
 
 ### 👉 [Try it now in your browser](https://marcosblg.github.io/assetscope/)
 
+🌐 **In English and Spanish**: it opens in your browser's language and the **EN / ES** button switches it.
+
 Nothing to install or download: the link opens the tool with a sample inventory. Press **▶ Ver demo** for the guided tour.
 
 ![AssetScope demo](docs/demo.gif)
 
 🎬 **[Watch the demo video (30 s)](docs/demo.mp4)** · or press **▶ Watch demo** inside the app to walk through it yourself.
-
-> The interface is in Spanish for now.
 
 ## What it does
 
