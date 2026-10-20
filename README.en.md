@@ -51,6 +51,10 @@ Nothing to install or download: the link opens the tool with a sample inventory.
 - The QR holds the device data and can be read offline by any phone. Or, if you prefer, a link that opens its record in AssetScope.
 - The QR generator is built into the HTML itself: no external service is called.
 
+**Reminders without a server**
+- **Expiry calendar (.ics)**: one event per reminder (90, 30 and 7 days before, and on the day) to import into Outlook or Google Calendar. The warning reaches your calendar and your phone.
+- **On opening**, whatever entered the warning period or expired since your last visit shows up at the top, tagged NEW.
+
 **Import without retyping**
 - **From Excel (CSV)**: recognises the usual columns in Spanish or English (*Nº de serie*, *Serial Number*, *Fin de garantía*, *Warranty end*…), dates in any format and prices with decimal commas. If the device already exists (same serial number), it only fills in what's missing.
 - **From RackScope**: brings in the devices from your racks with their room, rack and U. Patch panels and gaps are skipped.

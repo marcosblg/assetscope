@@ -51,6 +51,10 @@ No hay que instalar ni descargar nada: el enlace abre la herramienta con un inve
 - El QR lleva los datos del equipo y se lee con cualquier móvil sin conexión. O, si lo prefieres, un enlace que abre su ficha en AssetScope.
 - El generador de QR va dentro del propio HTML: no se llama a ningún servicio de fuera.
 
+**Avisos sin servidor**
+- **Calendario de vencimientos (.ics)**: un evento por cada aviso (90, 30 y 7 días antes y el día que vence) para importar en Outlook o Google Calendar. El aviso te llega al calendario y al móvil.
+- **Al abrir**, lo que ha entrado en aviso o ha vencido desde tu última visita sale arriba y marcado como NUEVO.
+
 **Importar sin teclear**
 - **Desde Excel (CSV)**: reconoce solo las columnas habituales en español o inglés (*Nº de serie*, *Serial Number*, *Fin de garantía*, *Warranty end*…), las fechas en cualquier formato y los precios con coma. Si el equipo ya existe (mismo número de serie), solo rellena lo que falta.
 - **Desde RackScope**: trae los equipos de tus racks con su sala, rack y U. Los paneles de parcheo y los huecos se quedan fuera.

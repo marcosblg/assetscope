@@ -114,6 +114,13 @@ html[data-theme="light"] .btn.danger:hover,html[data-theme="light"] .btn.danger.
 .ev .nm b{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
 .ev .rel{font-family:var(--m);font-size:11.5px;text-align:right;font-weight:700;white-space:nowrap}
 .ev.bad .rel{color:var(--bad)} .ev.warn .rel{color:var(--warn)} .ev.ok .rel{color:var(--ok)} .ev.none .rel{color:var(--tx3);font-weight:500}
+#fresh:empty{display:none}
+#fresh{display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap;background:var(--warnbg);border:1px solid #ffb02088;border-left:4px solid var(--warn);border-radius:10px;padding:10px 12px;width:min(1132px,calc(100% - 32px));margin:16px auto -8px;font-size:12.5px}
+#fresh .t{flex:1 1 260px}
+#fresh .items{display:flex;gap:6px;flex-wrap:wrap}
+#fresh .items button{font-size:11.5px;padding:3px 8px;border:1px solid var(--line2);border-radius:6px;background:var(--panel);color:var(--tx);display:inline-flex;align-items:center;gap:6px}
+#fresh .items button:hover{border-color:var(--acc)}
+.ev .nw{font-style:normal;font-family:var(--m);font-size:9.5px;font-weight:700;background:var(--warn);color:#1a1200;border-radius:4px;padding:1px 5px;margin-left:6px;vertical-align:2px;letter-spacing:.3px}
 .empty{background:var(--panel);border:1px dashed var(--line2);border-radius:12px;padding:22px;font-size:13px;color:var(--tx2);line-height:1.6;text-align:center}
 
 /* inventario */
@@ -306,6 +313,7 @@ html[data-theme="dark"] input[type=date]{color-scheme:dark}
       <button data-exp="pdf">📄 Informe de parque (PDF)<small>Resumen, caducidades e inventario completo</small></button>
       <button data-exp="csv">📊 Excel (CSV)<small>Todo el inventario, una fila por equipo</small></button>
       <button data-exp="qr">🏷 Etiquetas con QR<small>Hoja A4 de 3 × 8 para imprimir</small></button>
+      <button data-exp="ics">📅 Calendario de vencimientos (.ics)<small>Avisos en Outlook o Google Calendar antes de que caduque nada</small></button>
       <hr>
       <button data-exp="json">💾 Copia de seguridad (JSON)<small>Para volver a importarlo aquí</small></button>
     </div>
@@ -324,7 +332,7 @@ html[data-theme="dark"] input[type=date]{color-scheme:dark}
   <input type="file" id="file" hidden>
 </div>
 
-<div id="stage"><div id="view"></div></div>
+<div id="stage"><div id="fresh"></div><div id="view"></div></div>
 
 <div id="veil"><div class="modal" id="modal"></div></div>
 <div id="warn"></div>
@@ -363,6 +371,10 @@ const I18N=(()=>{
 "＋ Equipo": "＋ Device",
 "⭳ Exportar ▾": "⭳ Export ▾",
 "📄 Informe de parque (PDF)": "📄 Fleet report (PDF)",
+"📅 Calendario de vencimientos (.ics)": "📅 Expiry calendar (.ics)",
+"Avisos en Outlook o Google Calendar antes de que caduque nada": "Reminders in Outlook or Google Calendar before anything expires",
+"Entendido": "Got it",
+"NUEVO": "NEW",
 "Resumen, caducidades e inventario completo": "Summary, expiry dates and full inventory",
 "📊 Excel (CSV)": "📊 Excel (CSV)",
 "Todo el inventario, una fila por equipo": "The whole inventory, one row per device",
@@ -715,7 +727,10 @@ const I18N=(()=>{
 "Dado de baja: discos borrados y pendiente de reciclaje": "Retired: disks wiped, awaiting recycling",
 "Renting OfiPrint": "OfiPrint leasing",
 "Inglés: la aplicación sale en inglés si el navegador está en inglés, y con el botón EN / ES se cambia cuando quieras. Los datos que escribes no se tocan; los de ejemplo, sí.": "English: the app shows in English if your browser is in English, and the EN / ES button switches language whenever you like. Your own data is never touched; the sample data is translated.",
-"16 de octubre de 2026": "October 16, 2026"
+"16 de octubre de 2026": "October 16, 2026",
+"21 de octubre de 2026": "October 21, 2026",
+"Calendario de vencimientos: Exportar › Calendario de vencimientos crea un evento por cada aviso (90, 30 y 7 días antes y el día que vence) para importarlo en Outlook o Google Calendar. El aviso te llega donde ya miras cada día, sin instalar nada.": "Expiry calendar: Export › Expiry calendar creates one event per reminder (90, 30 and 7 days before, and on the day) to import into Outlook or Google Calendar. The warning reaches the place you already look every day, without installing anything.",
+"Aviso al abrir: si desde tu última visita algo ha entrado en el plazo de aviso o ha vencido, sale arriba con un enlace a cada equipo, y en la lista lleva la marca NUEVO.": "Notice on opening: if since your last visit something has entered the warning period or expired, it appears at the top with a link to each device, and it's tagged NEW in the list."
 }));
   const P=[
  // tiempo relativo: "hace 3 meses", "en 20 días", "venció hace…", "vence en…", "vence hoy"
@@ -1046,8 +1061,10 @@ function save(){
   if(hData!==null&&k!==hData&&!hMute){UNDO.push(hData);if(UNDO.length>60)UNDO.shift();REDO.length=0;}
   hData=k;histUI();
   if(fileHandle){clearTimeout(wTimer);wTimer=setTimeout(writeFile,600);}
+  if(BOOTED&&!FRESH)markSeen();   // lo que cambias tú mientras trabajas ya lo has visto
   updateSaveUI();
 }
+let BOOTED=false;
 function histUI(){$("#undo").disabled=!UNDO.length;$("#redo").disabled=!REDO.length;}
 function histGo(from,to,msg){
   if(!from.length){toast(msg[1]);return;}
@@ -1105,7 +1122,7 @@ async function restoreHandle(){
     const perm=await h.queryPermission({mode:"readwrite"});
     if(perm==="granted"){
       fileHandle=h;fileName=h.name;
-      try{const d=parseDB(JSON.parse(await (await h.getFile()).text()));if(d){DB=d;setTheme(DB.theme);UNDO=[];REDO=[];hData=dataKey();histUI();render();}}catch(e){}
+      try{const d=parseDB(JSON.parse(await (await h.getFile()).text()));if(d){DB=d;setTheme(DB.theme);UNDO=[];REDO=[];hData=dataKey();histUI();checkFresh();render();}}catch(e){}
     }else toast("Pulsa 💾 Archivo para reconectar "+(await idbGet("name")||"tu archivo"));
   }catch(e){}
   updateSaveUI();
@@ -1158,6 +1175,7 @@ function render(){
   const n=activos().length;
   $("#stats").textContent=n+" equipo"+(n===1?"":"s")+(DB.activos.length>n?" · "+(DB.activos.length-n)+" de baja":"");
   if(DB.tab==="inv")renderInv();else if(DB.tab==="rep")renderRep();else renderCad();
+  renderFresh();
 }
 function evRow(e){
   const a=e.a;
@@ -1165,9 +1183,44 @@ function evRow(e){
     <span class="dot ${e.lvl}"></span>
     <span class="dt">${fdate(e.iso)}</span>
     <span class="kind">${CICLO[e.k]}<small>${esc(TYPES[a.tipo])} · ${esc(ESTADOS[a.estado].n)}</small></span>
-    <span class="nm"><b>${esc(a.nombre)}</b><small>${esc([a.inv,what(a),a.serie?"S/N "+a.serie:"",where(a),a.asignado].filter(Boolean).join(" · "))}</small></span>
+    <span class="nm"><b>${esc(a.nombre)}${FRESH&&FRESH.keys.has(evKey(e))?'<i class="nw">NUEVO</i>':""}</b><small>${esc([a.inv,what(a),a.serie?"S/N "+a.serie:"",where(a),a.asignado].filter(Boolean).join(" · "))}</small></span>
     <span class="rel">${e.d<0?"venció ":"vence "}${rel(e.d)}</span></button>`;
 }
+/* ---------- lo que ha cambiado desde la ultima visita ----------
+   Se guarda en este navegador que vencimientos estaban ya en aviso o vencidos. Al abrir, lo que
+   haya entrado en aviso o vencido desde entonces sale arriba hasta que se pulsa «Entendido». */
+const SEEN=KEY+".seen";
+let FRESH=null;
+const evKey=e=>e.a.id+"|"+e.k+"|"+e.iso+"|"+e.lvl;
+function markSeen(){try{localStorage.setItem(SEEN,JSON.stringify({d:todayIso(),k:events().filter(e=>e.lvl!=="ok").map(evKey)}));}catch(e){}}
+function checkFresh(){
+  let prev=null;try{prev=JSON.parse(localStorage.getItem(SEEN)||"null");}catch(e){}
+  if(!prev||!Array.isArray(prev.k)){FRESH=null;markSeen();return;}
+  const old=new Set(prev.k),nuevos=events().filter(e=>e.lvl!=="ok"&&!old.has(evKey(e)));
+  if(!nuevos.length){FRESH=null;markSeen();return;}
+  FRESH={desde:isoOk(prev.d),list:nuevos,keys:new Set(nuevos.map(evKey))};
+}
+function renderFresh(){
+  const box=$("#fresh");
+  if(FRESH){   // quita lo que ya no aplica: equipo borrado, fecha cambiada, inventario sustituido…
+    const cur=new Set(events().map(evKey));FRESH.list=FRESH.list.filter(e=>cur.has(evKey(e)));FRESH.keys=new Set(FRESH.list.map(evKey));
+    if(!FRESH.list.length){FRESH=null;markSeen();}
+  }
+  if(!FRESH){box.innerHTML="";return;}
+  const w=FRESH.list.filter(e=>e.lvl==="warn").length,b=FRESH.list.length-w,av=DB.cfg.aviso;
+  const parts=[];
+  if(w)parts.push(L(w===1?`1 fecha de fin ha entrado en los próximos ${av} días`:`${w} fechas de fin han entrado en los próximos ${av} días`,
+                    w===1?`1 end date is now within the next ${av} days`:`${w} end dates are now within the next ${av} days`));
+  if(b)parts.push(L(b===1?"1 ha vencido":`${b} han vencido`,b===1?"1 has expired":`${b} have expired`));
+  const desde=FRESH.desde?L(` (${fdate(FRESH.desde)})`,` (${fdate(FRESH.desde)})`):"";
+  box.innerHTML=`<span class="t">🔔 <b>${L("Desde tu última visita","Since your last visit")}${desde}:</b> ${parts.join(L(" y "," and "))}.</span>
+    <span class="items">${FRESH.list.slice(0,6).map(e=>`<button data-fo="${e.a.id}"><span class="dot ${e.lvl}"></span>${esc(e.a.nombre)} · ${esc(T(CICLO[e.k]))}</button>`).join("")}${FRESH.list.length>6?`<span>+${FRESH.list.length-6}</span>`:""}</span>
+    <button class="btn sm" id="freshOk">Entendido</button>`;
+}
+$("#fresh").addEventListener("click",ev=>{
+  const o=ev.target.closest("[data-fo]");if(o){const a=byId(o.dataset.fo);if(a)openAsset(a);return;}
+  if(ev.target.closest("#freshOk")){markSeen();FRESH=null;render();}
+});
 function renderCad(){
   const list=activos().filter(hay),ev=events(list),sf=sinFechas(list),c={bad:0,warn:0,ok:0};
   ev.forEach(e=>c[e.lvl]++);
@@ -1624,6 +1677,77 @@ function expJSON(){
   save();const j=JSON.stringify(DB,null,2);
   deliver(new Blob([j],{type:"application/json"}),"assetscope-"+stamp()+".json",j);
 }
+// calendario: un evento por aviso (N dias antes y el dia del vencimiento) de cada fecha de fin futura
+const L=(es,en)=>I18N.lang==="en"?en:es;
+const icsTxt=s=>String(s==null?"":s).replace(/\\/g,"\\\\").replace(/;/g,"\\;").replace(/,/g,"\\,").replace(/\r?\n/g,"\\n");
+function icsFold(line){   // lineas de 75 bytes como pide el RFC 5545, sin partir caracteres UTF-8
+  const enc=new TextEncoder();if(enc.encode(line).length<=75)return line;
+  const out=[];let cur="",n=0,lim=75;
+  for(const ch of line){const b=enc.encode(ch).length;if(n+b>lim){out.push(cur);cur=" ";n=1;lim=75;}cur+=ch;n+=b;}
+  out.push(cur);return out.join("\r\n");
+}
+const icsDay=iso=>iso.replace(/-/g,"");
+function icsPlan(offs){
+  const out=[];
+  events().forEach(e=>offs.forEach(o=>{
+    const d=new Date(+e.iso.slice(0,4),+e.iso.slice(5,7)-1,+e.iso.slice(8,10)-o),iso=isoOf(d);
+    if(iso>=todayIso())out.push({e,o,iso});}));
+  return out.sort((x,y)=>x.iso<y.iso?-1:x.iso>y.iso?1:0);
+}
+function icsBuild(plan){
+  const now=new Date().toISOString().replace(/[-:]/g,"").replace(/\.\d+/,"");
+  const L1=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//AssetScope//Vencimientos//"+(I18N.lang==="en"?"EN":"ES"),"CALSCALE:GREGORIAN","METHOD:PUBLISH",
+    "X-WR-CALNAME:"+icsTxt(L("AssetScope — vencimientos","AssetScope — expiry dates")+(DB.cfg.empresa?" · "+DB.cfg.empresa:""))];
+  plan.forEach(({e,o,iso})=>{
+    const a=e.a,k=T(CICLO[e.k]),nx=new Date(+iso.slice(0,4),+iso.slice(5,7)-1,+iso.slice(8,10)+1);
+    const sum=o?L(`${a.nombre} · ${k} vence en ${o} días (${fdate(e.iso)})`,`${a.nombre} · ${k} expires in ${o} days (${fdate(e.iso)})`)
+               :L(`${a.nombre} · ${k} vence hoy`,`${a.nombre} · ${k} expires today`);
+    const desc=[
+      L("Equipo: ","Device: ")+[a.inv,a.nombre].filter(Boolean).join(" · "),
+      what(a)?L("Marca y modelo: ","Make and model: ")+what(a):"",
+      a.serie?L("Nº de serie: ","Serial number: ")+a.serie:"",
+      where(a)?L("Ubicación: ","Location: ")+where(a):"",
+      a.asignado?L("Asignado a: ","Assigned to: ")+a.asignado:"",
+      k+": "+L("fin el ","ends on ")+fdate(e.iso),
+      a.ciclo.renovacion?L("Coste de renovación: ","Renewal cost: ")+eur(a.ciclo.renovacion):""].filter(Boolean)
+      .concat("",L("Generado con AssetScope el ","Generated with AssetScope on ")+fdate(todayIso()));
+    L1.push("BEGIN:VEVENT","UID:assetscope-"+a.id+"-"+e.k+"-"+icsDay(e.iso)+"-"+o+"@assetscope","DTSTAMP:"+now,
+      "DTSTART;VALUE=DATE:"+icsDay(iso),"DTEND;VALUE=DATE:"+icsDay(isoOf(nx)),
+      "SUMMARY:"+icsTxt((o?"⚠ ":"🔴 ")+sum),"DESCRIPTION:"+icsTxt(desc.join("\n")),
+      "CATEGORIES:AssetScope","TRANSP:TRANSPARENT",
+      "BEGIN:VALARM","ACTION:DISPLAY","DESCRIPTION:"+icsTxt(sum),"TRIGGER:-PT15H","END:VALARM","END:VEVENT");
+  });
+  L1.push("END:VCALENDAR");
+  return L1.map(icsFold).join("\r\n")+"\r\n";
+}
+function icsDialog(){
+  const av=DB.cfg.aviso,opts=[...new Set([av,30,7])].filter(n=>n>0).sort((x,y)=>y-x);
+  modal.innerHTML=`<h3>${L("Calendario de vencimientos (.ics)","Expiry calendar (.ics)")}</h3>
+  <div class="body">
+    <div class="hint" style="margin:0">${L("Crea un archivo de calendario con un evento por cada aviso. El aviso llega donde ya miras cada día: Outlook, Google Calendar o el móvil, sin instalar nada.",
+      "Creates a calendar file with one event per reminder, so the warning reaches the place you already look every day: Outlook, Google Calendar or your phone, without installing anything.")}</div>
+    <div class="fld"><label>${L("Qué avisos crear","Which reminders to create")}</label></div>
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:-6px">
+      ${opts.map(n=>`<label class="chk"><input type="checkbox" data-off="${n}" checked> ${L(n+" días antes",n+" days before")}</label>`).join("")}
+      <label class="chk"><input type="checkbox" data-off="0" checked> ${L("El día que vence","On the expiry day")}</label></div>
+    <div class="hint" id="c_n"></div>
+    <div class="hint">${L("Cada evento ocupa el día entero, no te marca como ocupado y avisa el día anterior a las 9:00. Lo que ya ha vencido no se incluye: eso está en el semáforo.",
+      "Each event is all-day, doesn't mark you as busy and reminds you the day before at 9:00. What has already expired isn't included: that's on the traffic light.")}<br>
+      ${L("<b>Outlook:</b> Archivo › Abrir y exportar › Importar o exportar. <b>Google Calendar:</b> Configuración › Importar y exportar. Consejo: impórtalo en un calendario aparte (por ejemplo «Vencimientos»); cuando cambien las fechas, lo vacías y lo vuelves a importar.",
+      "<b>Outlook:</b> File › Open &amp; Export › Import/Export. <b>Google Calendar:</b> Settings › Import &amp; export. Tip: import it into a separate calendar (for example «Expiry dates»); when dates change, empty it and import it again.")}</div>
+  </div>
+  <div class="foot"><button class="btn" id="m_cancel">${L("Cancelar","Cancel")}</button><button class="btn acc" id="m_ok">📅 ${L("Descargar calendario","Download calendar")}</button></div>`;
+  veil.classList.add("on");
+  const offs=()=>$$("#modal [data-off]").filter(x=>x.checked).map(x=>+x.dataset.off);
+  const upd=()=>{const p=icsPlan(offs()),n=new Set(p.map(x=>x.e.a.id+x.e.k)).size;
+    $("#c_n").innerHTML=p.length?L(`Se crearán <b>${p.length}</b> eventos para <b>${n}</b> fechas de fin.`,`<b>${p.length}</b> events will be created for <b>${n}</b> end dates.`)
+      :L("No hay ningún aviso pendiente con estas opciones.","There are no upcoming reminders with these options.");
+    $("#m_ok").disabled=!p.length;};
+  modal.onchange=upd;upd();
+  $("#m_cancel").onclick=closeModal;
+  $("#m_ok").onclick=()=>{const p=icsPlan(offs());if(!p.length)return;closeModal();const t=icsBuild(p);
+    deliver(new Blob([t],{type:"text/calendar;charset=utf-8"}),L("vencimientos-","expiry-")+stamp()+".ics",t);};
+}
 function expPDF(){
   toast("Preparando documento…");
   setTimeout(()=>{
@@ -1659,7 +1783,7 @@ $("#expBtn").onclick=ev=>{ev.stopPropagation();openMenu(expMenu,$("#expBtn"));};
 $("#impBtn").onclick=ev=>{ev.stopPropagation();openMenu(impMenu,$("#impBtn"));};
 document.addEventListener("click",()=>{expMenu.classList.remove("on");impMenu.classList.remove("on");});
 expMenu.addEventListener("click",ev=>{const b=ev.target.closest("[data-exp]");if(!b)return;expMenu.classList.remove("on");
-  ({pdf:expPDF,csv:expCSV,json:expJSON,qr:()=>labelDialog(DB.activos.filter(a=>a.estado!=="baja"))})[b.dataset.exp]();});
+  ({pdf:expPDF,csv:expCSV,json:expJSON,ics:icsDialog,qr:()=>labelDialog(DB.activos.filter(a=>a.estado!=="baja"))})[b.dataset.exp]();});
 
 /* ---------- importar ---------- */
 let impMode="json";
@@ -1962,8 +2086,11 @@ $("#tour").onclick=()=>{tourT?tourStop():tourPlay();};
 $("#capX").onclick=tourStop;
 
 /* ---------- version y novedades ---------- */
-const VERSION="1.1";
+const VERSION="1.2";
 const NEWS=[
+ {v:"1.2",d:"21 de octubre de 2026",items:[
+   "Calendario de vencimientos: Exportar › Calendario de vencimientos crea un evento por cada aviso (90, 30 y 7 días antes y el día que vence) para importarlo en Outlook o Google Calendar. El aviso te llega donde ya miras cada día, sin instalar nada.",
+   "Aviso al abrir: si desde tu última visita algo ha entrado en el plazo de aviso o ha vencido, sale arriba con un enlace a cada equipo, y en la lista lleva la marca NUEVO."]},
  {v:"1.1",d:"16 de octubre de 2026",items:[
    "Inglés: la aplicación sale en inglés si el navegador está en inglés, y con el botón EN / ES se cambia cuando quieras. Los datos que escribes no se tocan; los de ejemplo, sí."]},
  {v:"1.0",d:"15 de octubre de 2026",items:[
@@ -1984,7 +2111,9 @@ I18N.button($("#theme"));
 DB=load();
 document.documentElement.setAttribute("data-theme",DB.theme);
 setTheme(DB.theme);
+checkFresh();
 render();
+BOOTED=true;
 UNDO=[];REDO=[];hData=dataKey();histUI();
 try{localStorage.setItem(KEY+".test","1");localStorage.removeItem(KEY+".test");}catch(e){lsOK=false;}
 updateSaveUI();

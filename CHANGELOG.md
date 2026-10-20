@@ -2,6 +2,11 @@
 
 # Novedades de AssetScope
 
+## v1.2 — 21 de octubre de 2026
+
+- **Calendario de vencimientos**: *Exportar › Calendario de vencimientos* crea un archivo .ics con un evento por cada aviso (90, 30 y 7 días antes y el día que vence) para importarlo en Outlook o Google Calendar. El aviso te llega donde ya miras cada día, sin instalar nada y sin que AssetScope se conecte a ningún sitio.
+- **Aviso al abrir**: si desde tu última visita algo ha entrado en el plazo de aviso o ha vencido, sale arriba con un enlace a cada equipo, y en la lista lleva la marca NUEVO hasta que pulsas *Entendido*.
+
 ## v1.1 — 16 de octubre de 2026
 
 - **Inglés**: la aplicación sale en inglés si el navegador está en inglés, y con el botón EN / ES se cambia cuando quieras. Los datos que escribes no se tocan; los de ejemplo, sí.
@@ -21,6 +26,11 @@ Primera versión pública, con licencia AGPL-3.0 desde el primer día.
 ---
 
 # What's new in AssetScope
+
+## v1.2 — October 21, 2026
+
+- **Expiry calendar**: *Export › Expiry calendar* creates an .ics file with one event per reminder (90, 30 and 7 days before, and on the day) to import into Outlook or Google Calendar. The warning reaches the place you already look every day, without installing anything and without AssetScope connecting anywhere.
+- **Notice on opening**: if since your last visit something has entered the warning period or expired, it appears at the top with a link to each device, and it's tagged NEW in the list until you press *Got it*.
 
 ## v1.1 — October 16, 2026
 
