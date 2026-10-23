@@ -6,6 +6,8 @@
 
 [RackScope](https://github.com/marcosblg/rackscope) te dice *dónde está* cada equipo. [SubnetScope](https://github.com/marcosblg/subnetscope) te dice *qué IP tiene*. AssetScope te dice *qué es y cuándo caduca*.
 
+Y para los certificados TLS y los dominios está [CertScope](https://github.com/marcosblg/certscope): pegas el PEM y te avisa antes de que caduquen. [Pruébala](https://marcosblg.github.io/certscope/).
+
 Nació para sustituir la típica hoja de inventario: la que tiene veinte columnas, nadie mira y te avisa de que la garantía del servidor venció cuando ya se ha roto. Aquí, al abrir, lo primero que ves es un semáforo con lo que ya está vencido y lo que vence pronto.
 
 ### 👉 [Pruébalo ahora en el navegador](https://marcosblg.github.io/assetscope/)

@@ -6,6 +6,8 @@
 
 [RackScope](https://github.com/marcosblg/rackscope) tells you *where* each device is. [SubnetScope](https://github.com/marcosblg/subnetscope) tells you *which IP* it has. AssetScope tells you *what it is and when it expires*.
 
+And for TLS certificates and domains there is [CertScope](https://github.com/marcosblg/certscope): paste the PEM and it warns you before they expire. [Try it](https://marcosblg.github.io/certscope/).
+
 It was built to replace the usual inventory spreadsheet: the one with twenty columns that nobody reads, which tells you the server's warranty had expired once the server is already broken. Here, the first thing you see is a traffic light with what has already expired and what expires soon.
 
 ### 👉 [Try it now in your browser](https://marcosblg.github.io/assetscope/)
